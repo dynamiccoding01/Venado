@@ -122,7 +122,8 @@ export function Header() {
                   className="flex items-center justify-between w-full px-3 py-2 text-sm font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700/50 rounded-lg transition-colors"
                 >
                   <div className="flex items-center gap-3">
-                    {isDarkMode ? <Sun size={16} /> : <Moon size={16} />} 
+                    <Sun size={16} className={isDarkMode ? "block" : "hidden"} />
+                    <Moon size={16} className={isDarkMode ? "hidden" : "block"} />
                     Cambiar tema
                   </div>
                 </button>

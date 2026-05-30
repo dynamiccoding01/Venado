@@ -89,7 +89,7 @@ export function Settings() {
                       !isDarkMode ? "border-brand-blue bg-blue-50/30 dark:bg-brand-blue/10" : "border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600"
                     )}
                   >
-                    {!isDarkMode && <div className="absolute top-4 right-4 w-3 h-3 bg-brand-blue rounded-full"></div>}
+                    <div className={clsx("absolute top-4 right-4 w-3 h-3 bg-brand-blue rounded-full", isDarkMode ? "hidden" : "block")}></div>
                     <div className="w-14 h-14 rounded-full bg-white dark:bg-slate-700 shadow-sm flex items-center justify-center text-amber-500 mb-4 transition-transform group-hover:scale-110">
                       <Sun size={28} />
                     </div>
@@ -105,7 +105,7 @@ export function Settings() {
                       isDarkMode ? "border-brand-blue bg-slate-900" : "border-slate-200 hover:border-slate-300"
                     )}
                   >
-                    {isDarkMode && <div className="absolute top-4 right-4 w-3 h-3 bg-brand-blue rounded-full"></div>}
+                    <div className={clsx("absolute top-4 right-4 w-3 h-3 bg-brand-blue rounded-full", isDarkMode ? "block" : "hidden")}></div>
                     <div className="w-14 h-14 rounded-full bg-slate-800 flex items-center justify-center text-blue-400 mb-4 shadow-inner transition-transform group-hover:scale-110">
                       <Moon size={28} />
                     </div>
