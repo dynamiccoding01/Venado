@@ -2,6 +2,7 @@ import React from 'react';
 import { Home, Route, Package, Users, BarChart3, Settings } from 'lucide-react';
 import { NavLink } from 'react-router-dom';
 import clsx from 'clsx';
+import logo from '../../assets/logo.jpg';
 
 const navItems = [
   { id: 'dashboard', icon: Home, label: 'Dashboard', path: '/' },
@@ -15,8 +16,8 @@ export function Sidebar() {
   return (
     <aside className="w-[80px] glass-panel border-r border-slate-200/50 dark:border-white/5 flex flex-col items-center py-6 h-full shrink-0 z-30 transition-colors duration-500">
       {/* Logo */}
-      <div className="w-12 h-12 bg-gradient-to-br from-brand-blue to-blue-400 rounded-2xl flex items-center justify-center mb-10 shadow-lg shadow-brand-blue/30 transform transition-transform hover:scale-105">
-        <span className="text-white font-black text-xl tracking-tighter">V</span>
+      <div className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center mb-10 shadow-lg shadow-brand-blue/30 transform transition-transform hover:scale-105 overflow-hidden p-1">
+        <img src={logo} alt="Venado" className="w-full h-full object-contain" />
       </div>
 
       {/* Navigation Icons */}

@@ -697,8 +697,58 @@ Estos mensajes llegan tanto a reponedores como supervisores conectados:
 
 ---
 
-# 5. RESUMEN RÁPIDO DE TODAS LAS RUTAS
+# 5. CATÁLOGOS BASE (CRUDs)
 
+Para la administración del sistema (ABM), existen endpoints CRUD estándar (`GET`, `POST`, `PUT`, `DELETE`) para las siguientes entidades. Todos respetan el mismo formato:
+
+* `GET /entidad/` — Listar todos (soporta query params para filtrar)
+* `GET /entidad/{id}` — Obtener uno específico
+* `POST /entidad/` — Crear uno nuevo
+* `PUT /entidad/{id}` — Actualizar
+* `DELETE /entidad/{id}` — Eliminar
+
+### Entidades disponibles:
+
+| Prefijo URL | Descripción | Filtros GET disponibles |
+|-------------|-------------|-------------------------|
+| `/roles/` | Roles del sistema | - |
+| `/departamentos/` | Departamentos de Bolivia | - |
+| `/ciudades/` | Ciudades / Municipios | `?id_departamento=X` |
+| `/mercados/` | Mercados | `?id_ciudad=X` |
+| `/usuarios/` | Usuarios (admin, supervisores, reponedores) | `?id_rol=X`, `?id_supervisor=X`, `?activo=true/false` |
+| `/perfiles-reponedor/` | Configuración específica de reponedores | endpoint extra: `GET /perfiles-reponedor/usuario/{id}` |
+| `/sesiones/` | Sesiones activas (solo GET, POST, DELETE) | `?id_usuario=X` |
+| `/categorias-cliente/` | Categorías (Mayorista, Minorista, etc) | - |
+| `/pdvs/` | Puntos de Venta (Clientes) | `?id_mercado=X`, `?id_categoria=X`, `?id_supervisor=X`, `?id_reponedor_asignado=X` |
+| `/micro-tareas/` | Tareas por categoría de PDV | `?id_categoria=X` |
+| `/gps/` | Posiciones GPS (solo POST y GET) | `?id_reponedor=X` |
+| `/incidencias/` | Incidencias (problemas en PDVs) | `?resuelta=true/false`, `?id_reponedor=X` |
+| `/redistribuciones/`| Redistribuciones sugeridas | `?estado=X` |
+| `/kpis/` | KPIs diarios por reponedor | `?id_reponedor=X`, `?fecha=YYYY-MM-DD` |
+| `/notificaciones/` | Alertas del sistema | `?id_supervisor=X`, `?id_reponedor=X`, `?leida=true/false` |
+
+> **🔐 Nota sobre Creación de Usuarios:**
+> Al hacer un `POST /usuarios/` o `PUT /usuarios/{id}`, debes enviar el campo `"password"` en **texto plano**. El backend se encarga automáticamente de encriptarlo (Bcrypt) antes de guardarlo en la base de datos.
+>
+> **Ejemplo de POST /usuarios/:**
+> ```json
+> {
+>   "id_rol": 3,
+>   "id_ciudad": 1,
+>   "nombre": "Juan Reponedor",
+>   "email": "juan@venado.bo",
+>   "telefono": "77712345",
+>   "id_supervisor": 2,
+>   "activo": true,
+>   "password": "mi_password_seguro123"
+> }
+> ```
+
+---
+
+# 6. RESUMEN RÁPIDO DE TODOS LOS ENDPOINTS (Cheat Sheet)
+
+### Endpoints Principales (Operación Diaria)
 | Método | Endpoint | Descripción |
 |--------|----------|-------------|
 | `GET` | `/` | Health check |
@@ -722,9 +772,20 @@ Estos mensajes llegan tanto a reponedores como supervisores conectados:
 | `WS` | `/ws/reponedor/{id}` | WebSocket del reponedor |
 | `WS` | `/ws/supervisor/{id}` | WebSocket del supervisor |
 
+### Endpoints CRUD de Mantenimiento
+*(Todos incluyen GET, POST, PUT, DELETE a menos que se indique lo contrario)*
+
+| Dominio | Endpoints Base |
+|---------|----------------|
+| **Usuarios** | `/usuarios/`, `/roles/`, `/perfiles-reponedor/`, `/sesiones/` |
+| **Geografía**| `/departamentos/`, `/ciudades/`, `/mercados/` |
+| **Catálogo** | `/categorias-cliente/`, `/pdvs/`, `/micro-tareas/` |
+| **Gestión**  | `/incidencias/`, `/redistribuciones/`, `/kpis/`, `/notificaciones/` |
+| **Tracker**  | `/gps/` *(Solo POST/GET)* |
+
 ---
 
-# 6. EJEMPLO COMPLETO — Flujo del Reponedor
+# 7. EJEMPLO COMPLETO — Flujo del Reponedor
 
 ```javascript
 const BASE = 'https://TU-APP.onrender.com';
@@ -757,7 +818,7 @@ const clima = await climaRes.json();
 
 ---
 
-# 7. CÓDIGOS DE ERROR COMUNES
+# 8. CÓDIGOS DE ERROR COMUNES
 
 | Código | Significado |
 |--------|-------------|
@@ -765,13 +826,13 @@ const clima = await climaRes.json();
 | `201` | Created — Recurso creado exitosamente |
 | `204` | No Content — Eliminado exitosamente |
 | `400` | Bad Request — Datos inválidos o formato de fecha incorrecto (usar YYYY-MM-DD) |
-| `404` | Not Found — Ruta, visita o recurso no encontrado |
+| `404` | Not Found — Ruta, visita, pdv o recurso no encontrado |
 | `500` | Internal Server Error — Error del servidor |
 | `502` | Bad Gateway — Error con API externa (clima) |
 
 **Formato de error:**
 ```json
 {
-  "detail": "Ruta no encontrada"
+  "detail": "PDV no encontrado"
 }
 ```
