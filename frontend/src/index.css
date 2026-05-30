@@ -16,12 +16,12 @@
 
 @layer base {
   html, body {
-    @apply bg-brand-gray-bg text-slate-800 antialiased h-full w-full m-0 p-0;
+    @apply bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 antialiased h-full w-full m-0 p-0 transition-colors duration-300;
     font-family: 'Inter', system-ui, -apple-system, sans-serif;
   }
   
   #root {
-    @apply h-full w-full flex;
+    @apply h-full w-full flex bg-slate-50 dark:bg-slate-900 transition-colors duration-300;
   }
 }
 
