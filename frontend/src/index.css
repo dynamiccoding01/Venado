@@ -1,0 +1,39 @@
+@import "tailwindcss";
+
+@theme {
+  /* Corporative Colors */
+  --color-brand-blue: #2563eb; /* Primary Blue */
+  --color-brand-blue-hover: #1d4ed8;
+  --color-brand-red: #ef4444; /* Alerts / Errors */
+  --color-brand-red-hover: #dc2626;
+  --color-brand-gray-bg: #f8fafc; /* Very light gray for app background */
+  --color-brand-gray-border: #e2e8f0;
+  --color-brand-gray-text: #64748b;
+  --color-brand-white: #ffffff;
+}
+
+@layer base {
+  html, body {
+    @apply bg-brand-gray-bg text-slate-800 antialiased h-full w-full m-0 p-0;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  }
+  
+  #root {
+    @apply h-full w-full flex;
+  }
+}
+
+/* Scrollbar customization for a cleaner look */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  @apply bg-slate-300 rounded-full;
+}
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-slate-400;
+}
