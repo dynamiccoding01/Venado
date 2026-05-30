@@ -84,7 +84,11 @@ export function MonitoreoRastreoView() {
           }
         });
       }
-      setReponedores(prev => prev.length === 0 ? initialReponedores : prev);
+      setReponedores(prev => {
+        if (prev.length === 0) return initialReponedores;
+        const prevMap = new Map(prev.map(p => [p.id, p]));
+        return initialReponedores.map(r => prevMap.has(r.id) ? { ...r, ...prevMap.get(r.id) } : r);
+      });
     }).catch(e => console.error("Error cargando reponedores:", e));
 
     let supervisorId = 2;
