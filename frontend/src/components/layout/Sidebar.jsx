@@ -39,7 +39,13 @@ export function Sidebar() {
       </div>
 
       {/* Navigation Icons */}
-      <nav className="flex-1 flex flex-col gap-5 w-full px-3">
+      <nav 
+        className="flex-1 flex flex-col gap-4 w-full px-3 overflow-y-auto pb-6"
+        style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+      >
+        <style>{`
+          nav::-webkit-scrollbar { display: none; }
+        `}</style>
         {visibleNavItems.map((item) => (
           <NavLink
             key={item.id}
