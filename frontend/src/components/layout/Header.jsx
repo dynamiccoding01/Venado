@@ -106,6 +106,14 @@ export function Header() {
                 <button className="flex items-center gap-3 px-3 py-2 text-sm font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700/50 rounded-lg transition-colors w-full text-left">
                   <User size={16} /> Mi perfil
                 </button>
+
+                <Link 
+                  to="/settings" 
+                  onClick={() => setIsProfileOpen(false)}
+                  className="flex items-center gap-3 px-3 py-2 text-sm font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-700/50 rounded-lg transition-colors w-full text-left"
+                >
+                  <Settings size={16} /> Ajustes
+                </Link>
                 
                 <button 
                   onClick={() => {
