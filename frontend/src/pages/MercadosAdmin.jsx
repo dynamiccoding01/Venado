@@ -147,31 +147,14 @@ export function MercadosAdmin() {
         </div>
       </div>
 
-      <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title="Registrar Nuevo Mercado/Zona">
-        <form onSubmit={handleSave} className="flex flex-col gap-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="md:col-span-2">
-              <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1">Nombre del Mercado</label>
-              <input type="text" required value={formData.nombre} onChange={e => setFormData({...formData, nombre: e.target.value})} placeholder="Ej. Mercado Rodriguez" className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-white rounded-lg text-sm transition-colors focus:ring-1 focus:ring-brand-blue outline-none" />
-            </div>
-
-            <div className="md:col-span-1">
-              <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1">Ciudad</label>
-              <select required value={formData.id_ciudad} onChange={e => setFormData({...formData, id_ciudad: e.target.value})} className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-white rounded-lg text-sm transition-colors focus:ring-1 focus:ring-brand-blue outline-none">
-                <option value="1">La Paz</option>
-                <option value="2">El Alto</option>
-                <option value="3">Santa Cruz</option>
-                <option value="4">Cochabamba</option>
-              </select>
-            </div>
-
-            <div className="md:col-span-2">
-              <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1">Dirección / Referencia</label>
-              <input type="text" value={formData.direccion} onChange={e => setFormData({...formData, direccion: e.target.value})} placeholder="Dirección física" className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-white rounded-lg text-sm transition-colors focus:ring-1 focus:ring-brand-blue outline-none" />
-            </div>
-
-            <div className="md:col-span-2 border-t border-slate-200 dark:border-slate-700 pt-4 mt-2 transition-colors">
+      <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title="Registrar Nuevo Mercado/Zona" maxWidth="max-w-5xl">
+        <form onSubmit={handleSave} className="flex flex-col gap-6">
+          <div className="flex flex-col lg:flex-row gap-8">
+            
+            {/* Izquierda: Mapa */}
+            <div className="lg:w-1/2 flex flex-col">
               <label className="block text-sm font-bold text-slate-800 dark:text-slate-100 mb-2">Ubicación en el Mapa</label>
+              
               <div className="flex gap-2 mb-4">
                 <div className="w-1/2">
                   <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">Latitud</label>
@@ -183,7 +166,7 @@ export function MercadosAdmin() {
                 </div>
               </div>
 
-              <div className="h-40 w-full bg-slate-100 dark:bg-slate-800 rounded-lg overflow-hidden border border-slate-300 dark:border-slate-600 relative">
+              <div className="flex-1 min-h-[300px] w-full bg-slate-100 dark:bg-slate-800 rounded-lg overflow-hidden border border-slate-300 dark:border-slate-600 relative">
                 <p className="absolute top-2 left-2 z-[400] bg-white/90 dark:bg-slate-800/90 text-slate-800 dark:text-slate-200 px-2 py-1 text-[10px] font-bold rounded shadow pointer-events-none">Haz clic para fijar la coordenada del mercado</p>
                 <MapContainer center={formData.latitud && formData.longitud ? [parseFloat(formData.latitud), parseFloat(formData.longitud)] : [-16.5, -68.15]} zoom={12} className="w-full h-full z-0">
                   <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
@@ -191,9 +174,33 @@ export function MercadosAdmin() {
                 </MapContainer>
               </div>
             </div>
+
+            {/* Derecha: Formulario */}
+            <div className="lg:w-1/2 flex flex-col gap-5">
+              <div>
+                <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1">Nombre del Mercado</label>
+                <input type="text" required value={formData.nombre} onChange={e => setFormData({...formData, nombre: e.target.value})} placeholder="Ej. Mercado Rodriguez" className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-white rounded-lg text-sm transition-colors focus:ring-1 focus:ring-brand-blue outline-none" />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1">Ciudad</label>
+                <select required value={formData.id_ciudad} onChange={e => setFormData({...formData, id_ciudad: e.target.value})} className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-white rounded-lg text-sm transition-colors focus:ring-1 focus:ring-brand-blue outline-none">
+                  <option value="1">La Paz</option>
+                  <option value="2">El Alto</option>
+                  <option value="3">Santa Cruz</option>
+                  <option value="4">Cochabamba</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1">Dirección / Referencia</label>
+                <input type="text" value={formData.direccion} onChange={e => setFormData({...formData, direccion: e.target.value})} placeholder="Dirección física" className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-white rounded-lg text-sm transition-colors focus:ring-1 focus:ring-brand-blue outline-none" />
+              </div>
+            </div>
+
           </div>
 
-          <div className="mt-4 pt-4 border-t border-slate-200 dark:border-slate-700 flex justify-end gap-3 transition-colors">
+          <div className="pt-4 border-t border-slate-200 dark:border-slate-700 flex justify-end gap-3 transition-colors">
             <button type="button" onClick={() => setIsModalOpen(false)} className="px-4 py-2 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">Cancelar</button>
             <button type="submit" className="px-4 py-2 bg-brand-blue text-white rounded-lg text-sm font-bold flex items-center gap-2 hover:bg-brand-blue-hover transition-colors"><Save size={16}/> Guardar</button>
           </div>
