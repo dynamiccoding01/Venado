@@ -1,37 +1,11 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { Users, CheckCircle2, AlertTriangle, Clock, ChevronRight, Package, MapPin, Search, MoreVertical } from 'lucide-react';
+import { Users, CheckCircle2, AlertTriangle, Clock, ChevronRight, Package, MapPin, Search, MoreVertical, Activity } from 'lucide-react';
 import clsx from 'clsx';
+import { API, createWebSocket } from '../api/client';
 
-// --- MOCK DATA ---
-const activeStaff = [
-  { id: 1, name: 'Carlos Méndez', region: 'Santa Cruz (Norte)', pdv: 'SCZ-MKT-042', status: 'Online', avatar: 'CM' },
-  { id: 2, name: 'Ana Rodriguez', region: 'La Paz (Sopocachi)', pdv: 'LPZ-SUP-011', status: 'Online', avatar: 'AR' },
-  { id: 3, name: 'Roberto Chura', region: 'Cochabamba (Cala Cala)', pdv: 'CBBA-MIN-089', status: 'Break', avatar: 'RC' },
-  { id: 4, name: 'Lucía Vargas', region: 'El Alto (Ceja)', pdv: 'EL-ALT-005', status: 'Online', avatar: 'LV' },
-];
-
-const liveActivity = [
-  { id: 1, type: 'complete', title: 'Route Complete: Route #442', desc: 'Carlos Méndez finalized all 12 PDVs in North SCZ.', time: '2 mins ago', icon: CheckCircle2, color: 'text-brand-blue' },
-  { id: 2, type: 'alert', title: 'Out of Stock Alert', desc: "Ana Rodriguez reported OOS for 'Aceite Fino' at LPZ-SUP-011.", time: '15 mins ago', icon: AlertTriangle, color: 'text-brand-red' },
-  { id: 3, type: 'login', title: 'Staff Login', desc: 'Roberto Chura started shift in Cochabamba region.', time: '45 mins ago', icon: MapPin, color: 'text-slate-500' },
-];
-
-const pdvRegister = [
-  { id: 'SCZ-MKT-1022', name: 'Tienda Doña Maria', market: 'Mercado Abasto, SCZ', category: 'Minorista', lastVisit: 'Today, 10:45 AM', status: 'Visited' },
-  { id: 'LPZ-SUP-0451', name: 'Hipermaxi Los Pinos', market: 'Calacoto, LPZ', category: 'Supermercado', lastVisit: 'Yesterday', status: 'Pending' },
-  { id: 'CBBA-CAN-331', name: 'Distribuidora El Valle', market: 'La Cancha, CBBA', category: 'Mayorista', lastVisit: '2 days ago', status: 'Blocked' },
-  { id: 'ALT-TRX-9021', name: 'Mini Market 16 de Julio', market: 'Feria 16 de Julio, EL ALT', category: 'Minorista', lastVisit: 'Scheduled Today', status: 'Planned' },
-];
-
-const kpiData = [
-  { title: 'Visitas Completadas', value: '1,248', change: '+4.2%', trend: 'up', icon: CheckCircle2, color: 'bg-blue-600' },
-  { title: 'Personal Activo', value: '42', change: 'de 45', trend: 'up', icon: Users, color: 'bg-indigo-600' },
-  { title: 'Incidencias', value: '7', change: '3 Críticas', trend: 'down', icon: Package, color: 'bg-rose-500' },
-  { title: 'Cobertura', value: '88.5%', change: '+1.1%', trend: 'up', icon: MapPin, color: 'bg-emerald-500' },
-];
-
+// --- MOCK DATA FALLBACKS ---
 const chartData = [
   { name: 'Norte', completadas: 400, pendientes: 240 },
   { name: 'Sur', completadas: 300, pendientes: 139 },
@@ -40,6 +14,63 @@ const chartData = [
 ];
 
 export function Dashboard() {
+  const [metrics, setMetrics] = useState(null);
+  const [liveActivity, setLiveActivity] = useState([]);
+  const [activeStaff, setActiveStaff] = useState([]);
+
+  useEffect(() => {
+    // 1. Fetch Metrics
+    API.getMetrics().then(data => setMetrics(data)).catch(console.error);
+
+    // 2. Connect Supervisor WebSocket
+    const ws = createWebSocket('/ws/supervisor/2');
+    ws.onopen = () => console.log('Supervisor WS Connected');
+    ws.onmessage = (event) => {
+      const data = JSON.parse(event.data);
+      if (data.reponedores) {
+        // Map WS reponedores to activeStaff format
+        const staffList = data.reponedores.map(rep => ({
+          id: rep.id,
+          name: `Reponedor ${rep.id}`, // Backend solo manda ID, en prod cruzar con tabla usuarios
+          region: 'En ruta',
+          pdv: rep.pdv_actual || 'Ruta libre',
+          status: rep.estado === 'activo' ? 'Online' : 'Offline',
+          avatar: `R${rep.id}`
+        }));
+        setActiveStaff(staffList);
+      }
+      
+      // Check for broadcast events
+      if (data.type) {
+        setLiveActivity(prev => {
+          const newAct = {
+            id: Date.now(),
+            title: `Evento: ${data.type}`,
+            desc: JSON.stringify(data.payload),
+            time: 'Recién',
+            icon: Activity,
+            color: 'text-brand-blue'
+          };
+          return [newAct, ...prev].slice(0, 5); // Keep last 5
+        });
+      }
+    };
+    
+    return () => ws.close();
+  }, []);
+
+  const kpiData = metrics ? [
+    { title: 'Visitas Completadas', value: metrics.visitas_completadas, change: `${metrics.eficiencia_ruta_pct}% efic.`, trend: 'up', icon: CheckCircle2, color: 'bg-blue-600' },
+    { title: 'Visitas Pendientes', value: metrics.visitas_pendientes, change: `${metrics.visitas_canceladas} Canceladas`, trend: 'down', icon: Clock, color: 'bg-yellow-500' },
+    { title: 'Total Rutas', value: metrics.total_rutas, change: 'Hoy', trend: 'up', icon: MapPin, color: 'bg-indigo-600' },
+    { title: 'Eficiencia Global', value: `${metrics.eficiencia_ruta_pct}%`, change: '+1.1%', trend: 'up', icon: Activity, color: 'bg-emerald-500' },
+  ] : [
+    // Loading skeleton or empty states
+    { title: 'Cargando...', value: '-', change: '-', trend: 'up', icon: CheckCircle2, color: 'bg-slate-400' },
+    { title: 'Cargando...', value: '-', change: '-', trend: 'up', icon: Clock, color: 'bg-slate-400' },
+    { title: 'Cargando...', value: '-', change: '-', trend: 'up', icon: MapPin, color: 'bg-slate-400' },
+    { title: 'Cargando...', value: '-', change: '-', trend: 'up', icon: Activity, color: 'bg-slate-400' },
+  ];
   const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
@@ -120,7 +151,11 @@ export function Dashboard() {
                 </tr>
               </thead>
               <tbody className="text-sm">
-                {activeStaff.map(staff => (
+                {activeStaff.length === 0 ? (
+                  <tr>
+                    <td colSpan="4" className="px-5 py-4 text-center text-slate-500">Esperando conexión de reponedores...</td>
+                  </tr>
+                ) : activeStaff.map(staff => (
                   <tr key={staff.id} className="border-b border-slate-100 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors">
                     <td className="px-5 py-4 flex items-center gap-3">
                       <div className="w-8 h-8 rounded-full bg-slate-200 dark:bg-slate-600 flex items-center justify-center text-xs font-bold text-slate-600 dark:text-slate-300">
@@ -159,7 +194,9 @@ export function Dashboard() {
           </div>
           <div className="p-5 flex-1 overflow-y-auto">
             <div className="relative border-l border-slate-200 dark:border-slate-600 ml-3 space-y-6">
-              {liveActivity.map(act => (
+              {liveActivity.length === 0 ? (
+                <p className="text-slate-500 text-sm italic pl-4">No hay actividad reciente. Escuchando servidor...</p>
+              ) : liveActivity.map(act => (
                 <div key={act.id} className="relative pl-6">
                   {/* Timeline Dot */}
                   <div className="absolute -left-3 top-0.5 bg-white dark:bg-slate-800 p-1 rounded-full ring-1 ring-slate-200 dark:ring-slate-600 transition-colors">
@@ -203,38 +240,11 @@ export function Dashboard() {
               </tr>
             </thead>
             <tbody className="text-sm">
-              {pdvRegister.map((pdv, index) => {
-                let statusColor = '';
-                if (pdv.status === 'Visited') statusColor = 'bg-brand-blue';
-                if (pdv.status === 'Pending') statusColor = 'bg-yellow-500';
-                if (pdv.status === 'Blocked') statusColor = 'bg-brand-red';
-                if (pdv.status === 'Planned') statusColor = 'bg-slate-400';
-
-                return (
-                  <tr key={index} className="border-b border-slate-100 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors">
-                    <td className="px-5 py-4 font-mono text-xs font-semibold text-brand-blue">{pdv.id}</td>
-                    <td className="px-5 py-4 font-medium text-slate-800 dark:text-slate-200">{pdv.name}</td>
-                    <td className="px-5 py-4 text-slate-600 dark:text-slate-400">{pdv.market}</td>
-                    <td className="px-5 py-4">
-                      <span className="bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 text-xs px-2 py-1 rounded border border-slate-200 dark:border-slate-600 transition-colors">
-                        {pdv.category}
-                      </span>
-                    </td>
-                    <td className="px-5 py-4">
-                      <div className="flex items-center gap-2">
-                        <span className={`w-2 h-2 rounded-full ${statusColor}`} />
-                        <span className={clsx(
-                          "font-medium",
-                          pdv.status === 'Blocked' && "text-brand-red",
-                          pdv.status === 'Pending' && "text-yellow-600 dark:text-yellow-500",
-                          pdv.status === 'Visited' && "text-brand-blue",
-                          pdv.status === 'Planned' && "text-slate-500 dark:text-slate-400"
-                        )}>{pdv.status}</span>
-                      </div>
-                    </td>
-                  </tr>
-                )
-              })}
+              <tr>
+                <td colSpan="5" className="px-5 py-8 text-center text-slate-500">
+                  Integraremos esta tabla en el próximo paso con datos de rutas...
+                </td>
+              </tr>
             </tbody>
           </table>
         </div>
