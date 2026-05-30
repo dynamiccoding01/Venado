@@ -2,9 +2,10 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMap, Polyline, CircleMarker } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import { Users, Navigation, Radio, MapPin, Search } from 'lucide-react';
+import { Users, Navigation, Radio, MapPin, Search, Route } from 'lucide-react';
 import clsx from 'clsx';
 import { API } from '../api/client';
+import { useNavigate } from 'react-router-dom';
 
 // Componente para actualizar el centro del mapa
 function MapUpdater({ center, zoom }) {
@@ -22,6 +23,7 @@ export function ReponedoresView() {
   const [selectedId, setSelectedId] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [wsStatus, setWsStatus] = useState('conectando'); // conectando, conectado, desconectado
+  const navigate = useNavigate();
   
   // Historial de la ruta
   const [historialRuta, setHistorialRuta] = useState([]);
@@ -370,6 +372,12 @@ export function ReponedoresView() {
                             Sin historial para esta fecha
                           </div>
                         )}
+                        <button 
+                          onClick={(e) => { e.stopPropagation(); navigate('/rutas?reponedor=' + rep.id); }}
+                          className="mt-3 w-full bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 py-2 rounded-lg text-[11px] font-bold transition-colors flex items-center justify-center gap-1.5 border border-slate-200 dark:border-slate-700 hover:border-brand-blue/30"
+                        >
+                          <Route size={14} className="text-brand-blue" /> Ver Historial de Rutas
+                        </button>
                       </div>
                     </div>
                   );

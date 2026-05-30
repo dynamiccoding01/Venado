@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Search, Filter, Play, MoreVertical, Zap, Route } from 'lucide-react';
+import { useSearchParams } from 'react-router-dom';
 import { MapContainer, TileLayer, Marker, Popup, Polyline, CircleMarker } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import clsx from 'clsx';
@@ -11,6 +12,17 @@ export function RoutesView() {
   const [routeDetails, setRouteDetails] = useState(null);
   const [loading, setLoading] = useState(true);
   const [optimizing, setOptimizing] = useState(false);
+  const [searchParams] = useSearchParams();
+  const [searchQuery, setSearchQuery] = useState(searchParams.get('reponedor') || '');
+
+  // Icono rojo tipo Google Maps
+  const redPinIcon = new L.DivIcon({
+    html: `<svg viewBox="0 0 24 24" fill="#ea4335" stroke="white" stroke-width="2" class="w-8 h-8 drop-shadow-md" style="margin-left:-8px; margin-top:-16px;"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>`,
+    className: 'custom-red-pin',
+    iconSize: [24, 24],
+    iconAnchor: [12, 24],
+    popupAnchor: [0, -24]
+  });
 
   // La Paz, Bolivia as default center
   const [mapCenter, setMapCenter] = useState([-16.500, -68.119]); 
@@ -75,6 +87,11 @@ export function RoutesView() {
     ? routeDetails.ruta_puntos.map(pt => [pt.pdv.latitud, pt.pdv.longitud])
     : [];
 
+  const filteredRoutes = routes.filter(route => 
+    route.id_reponedor?.toString().includes(searchQuery) ||
+    route.id_ruta?.toString().includes(searchQuery)
+  );
+
   return (
     <div className="flex flex-col gap-6 h-full pb-8 animate-fade-in-up">
       {/* Header */}
@@ -104,6 +121,8 @@ export function RoutesView() {
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
               <input 
                 type="text" 
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Buscar ruta o reponedor..." 
                 className="w-full pl-10 pr-4 py-2.5 glass-panel rounded-xl text-sm font-medium outline-none focus:ring-2 focus:ring-brand-blue/50 text-slate-800 dark:text-slate-200 transition-all" 
               />
@@ -113,9 +132,9 @@ export function RoutesView() {
           <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-3">
             {loading ? (
               <p className="text-center text-sm font-medium text-slate-500 p-4">Cargando rutas...</p>
-            ) : routes.length === 0 ? (
+            ) : filteredRoutes.length === 0 ? (
               <p className="text-center text-sm font-medium text-slate-500 p-4">No hay rutas en la base de datos.</p>
-            ) : routes.map(route => (
+            ) : filteredRoutes.map(route => (
               <button 
                 key={route.id_ruta}
                 onClick={() => handleSelectRoute(route)}
@@ -183,26 +202,45 @@ export function RoutesView() {
               const pos = [punto.pdv.latitud, punto.pdv.longitud];
               const isCompleted = punto.estado === 'completada';
               
-              return (
-                <CircleMarker
-                  key={punto.id_ruta_punto}
-                  center={pos}
-                  radius={isCompleted ? 6 : 8}
-                  fillColor={isCompleted ? '#10b981' : '#facc15'}
-                  color={isCompleted ? '#059669' : '#ca8a04'}
-                  weight={3}
-                  fillOpacity={1}
-                >
-                  <Popup>
-                    <div className="font-sans">
-                      <p className="font-bold text-sm text-slate-800">{punto.pdv.nombre_pdv}</p>
-                      <p className="text-xs text-slate-500 font-mono mt-1">{punto.pdv.codigo_gv}</p>
-                      <p className="text-xs text-brand-blue font-semibold mt-1">Orden óptimo: {punto.orden}</p>
-                      <p className="text-xs text-slate-500 mt-1">Estado: {punto.estado}</p>
-                    </div>
-                  </Popup>
-                </CircleMarker>
-              )
+              if (isCompleted) {
+                return (
+                  <CircleMarker
+                    key={punto.id_ruta_punto}
+                    center={pos}
+                    radius={6}
+                    fillColor={'#10b981'}
+                    color={'#059669'}
+                    weight={3}
+                    fillOpacity={1}
+                  >
+                    <Popup>
+                      <div className="font-sans">
+                        <p className="font-bold text-sm text-slate-800">{punto.pdv.nombre_pdv}</p>
+                        <p className="text-xs text-slate-500 font-mono mt-1">{punto.pdv.codigo_gv}</p>
+                        <p className="text-xs text-brand-blue font-semibold mt-1">Orden óptimo: {punto.orden}</p>
+                        <p className="text-xs text-slate-500 mt-1">Estado: {punto.estado}</p>
+                      </div>
+                    </Popup>
+                  </CircleMarker>
+                );
+              } else {
+                return (
+                  <Marker
+                    key={punto.id_ruta_punto}
+                    position={pos}
+                    icon={redPinIcon}
+                  >
+                    <Popup>
+                      <div className="font-sans">
+                        <p className="font-bold text-sm text-slate-800">{punto.pdv.nombre_pdv}</p>
+                        <p className="text-xs text-slate-500 font-mono mt-1">{punto.pdv.codigo_gv}</p>
+                        <p className="text-xs text-brand-blue font-semibold mt-1">Orden óptimo: {punto.orden}</p>
+                        <p className="text-xs text-slate-500 mt-1">Estado: {punto.estado}</p>
+                      </div>
+                    </Popup>
+                  </Marker>
+                );
+              }
             })}
           </MapContainer>
         </div>
