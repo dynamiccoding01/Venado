@@ -14,7 +14,7 @@ const navItems = [
 
 export function Sidebar() {
   return (
-    <aside className="w-[64px] bg-white border-r border-brand-gray-border flex flex-col items-center py-4 h-full shrink-0 shadow-sm z-10">
+    <aside className="w-[64px] bg-white dark:bg-slate-800 border-r border-brand-gray-border dark:border-slate-700 flex flex-col items-center py-4 h-full shrink-0 shadow-sm z-10 transition-colors duration-300">
       {/* Logo Placeholder (Small) */}
       <div className="w-10 h-10 bg-brand-blue rounded-lg flex items-center justify-center mb-8 shadow-sm">
         <span className="text-white font-bold text-lg">C</span>
@@ -31,8 +31,8 @@ export function Sidebar() {
               clsx(
                 "w-full aspect-square rounded-xl flex items-center justify-center transition-all duration-200 group relative",
                 isActive 
-                  ? "bg-blue-50 text-brand-blue shadow-sm ring-1 ring-blue-100" 
-                  : "text-slate-400 hover:bg-slate-50 hover:text-slate-600"
+                  ? "bg-blue-50 dark:bg-brand-blue/20 text-brand-blue shadow-sm ring-1 ring-blue-100 dark:ring-brand-blue/30" 
+                  : "text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700 hover:text-slate-600 dark:hover:text-slate-200"
               )
             }
           >
@@ -52,9 +52,12 @@ export function Sidebar() {
 
       {/* Bottom Actions */}
       <div className="mt-auto w-full px-2 flex flex-col gap-2">
-        <button className="w-full aspect-square rounded-xl flex items-center justify-center text-slate-400 hover:bg-slate-50 hover:text-slate-600 transition-colors">
+        <Link to="/settings" className="w-full aspect-square rounded-xl flex items-center justify-center text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700 hover:text-slate-600 dark:hover:text-slate-200 transition-colors group relative">
           <Settings size={22} />
-        </button>
+          <div className="absolute left-14 bg-slate-800 text-white text-xs px-2 py-1 rounded opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all whitespace-nowrap z-50 pointer-events-none">
+            Ajustes
+          </div>
+        </Link>
       </div>
     </aside>
   );
