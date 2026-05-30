@@ -76,20 +76,20 @@ export function RoutesView() {
     : [];
 
   return (
-    <div className="flex flex-col gap-6 h-full pb-8">
+    <div className="flex flex-col gap-6 h-full pb-8 animate-fade-in-up">
       {/* Header */}
       <div className="flex justify-between items-end">
         <div>
-          <h2 className="text-2xl font-bold text-slate-800 dark:text-white tracking-tight">Monitoreo de Rutas</h2>
-          <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">Supervisión y optimización TSP en tiempo real.</p>
+          <h2 className="text-3xl font-black text-slate-800 dark:text-white tracking-tight">Monitoreo de Rutas</h2>
+          <p className="text-sm font-medium text-slate-500 dark:text-slate-400 mt-1">Supervisión y optimización TSP en tiempo real.</p>
         </div>
         <div className="flex gap-3">
           <button 
             onClick={handleOptimize}
             disabled={!routeDetails || optimizing}
-            className="bg-brand-blue hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition-colors disabled:opacity-50"
+            className="bg-brand-blue hover:bg-brand-blue-hover text-white px-5 py-2.5 rounded-xl text-sm font-bold flex items-center gap-2 shadow-lg shadow-brand-blue/30 transition-all hover:scale-105 active:scale-95 disabled:opacity-50 disabled:hover:scale-100 disabled:shadow-none"
           >
-            {optimizing ? <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <Zap size={16} />} 
+            {optimizing ? <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" /> : <Zap size={18} strokeWidth={3} />} 
             Optimizar Ruta Activa
           </button>
         </div>
@@ -98,61 +98,64 @@ export function RoutesView() {
       <div className="flex flex-col lg:flex-row gap-6 flex-1 min-h-[600px]">
         
         {/* Panel Izquierdo: Lista de Rutas */}
-        <div className="w-full lg:w-80 bg-white dark:bg-slate-800 rounded-xl border border-brand-gray-border dark:border-slate-700 shadow-sm flex flex-col h-[600px]">
-          <div className="p-4 border-b border-slate-100 dark:border-slate-700">
+        <div className="w-full lg:w-80 glass-card rounded-3xl flex flex-col h-[600px] overflow-hidden">
+          <div className="p-5 border-b border-slate-200/50 dark:border-white/5 bg-white/40 dark:bg-dark-bg/20">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
               <input 
                 type="text" 
                 placeholder="Buscar ruta o reponedor..." 
-                className="w-full pl-9 pr-3 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-sm outline-none focus:border-brand-blue text-slate-800 dark:text-slate-200" 
+                className="w-full pl-10 pr-4 py-2.5 glass-panel rounded-xl text-sm font-medium outline-none focus:ring-2 focus:ring-brand-blue/50 text-slate-800 dark:text-slate-200 transition-all" 
               />
             </div>
           </div>
           
-          <div className="flex-1 overflow-y-auto p-3 flex flex-col gap-2">
+          <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-3">
             {loading ? (
-              <p className="text-center text-sm text-slate-500 p-4">Cargando rutas...</p>
+              <p className="text-center text-sm font-medium text-slate-500 p-4">Cargando rutas...</p>
             ) : routes.length === 0 ? (
-              <p className="text-center text-sm text-slate-500 p-4">No hay rutas en la base de datos.</p>
+              <p className="text-center text-sm font-medium text-slate-500 p-4">No hay rutas en la base de datos.</p>
             ) : routes.map(route => (
               <button 
                 key={route.id_ruta}
                 onClick={() => handleSelectRoute(route)}
                 className={clsx(
-                  "w-full text-left p-3 rounded-lg border transition-all duration-200",
+                  "w-full text-left p-4 rounded-2xl transition-all duration-300 relative overflow-hidden group",
                   selectedRoute?.id_ruta === route.id_ruta 
-                    ? "bg-blue-50/50 dark:bg-brand-blue/10 border-brand-blue shadow-sm" 
-                    : "bg-white dark:bg-slate-800 border-slate-100 dark:border-slate-700 hover:border-brand-blue dark:hover:border-brand-blue hover:shadow-sm"
+                    ? "glass-panel ring-2 ring-brand-blue shadow-lg shadow-brand-blue/20" 
+                    : "glass-panel hover:ring-1 hover:ring-brand-blue/50 hover:shadow-md hover:-translate-y-0.5"
                 )}
               >
-                <div className="flex justify-between items-center mb-2">
-                  <span className="text-xs font-bold font-mono text-slate-500">RUTA-{route.id_ruta}</span>
+                {selectedRoute?.id_ruta === route.id_ruta && (
+                  <div className="absolute top-0 left-0 w-1 h-full bg-brand-blue rounded-l-2xl"></div>
+                )}
+                <div className="flex justify-between items-center mb-3">
+                  <span className="text-xs font-black font-mono text-slate-500 dark:text-slate-400">RUTA-{route.id_ruta}</span>
                   <span className={clsx(
-                    "text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wider",
-                    route.estado === 'en_progreso' ? "bg-blue-100 text-brand-blue dark:bg-blue-900/30 dark:text-blue-400" :
-                    route.estado === 'completada' ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400" :
-                    "bg-slate-100 text-slate-500 dark:bg-slate-700 dark:text-slate-300"
+                    "text-[10px] font-bold px-2.5 py-1 rounded-lg uppercase tracking-widest shadow-sm",
+                    route.estado === 'en_progreso' ? "bg-brand-blue/10 text-brand-blue" :
+                    route.estado === 'completada' ? "bg-emerald-500/10 text-emerald-500" :
+                    "bg-slate-100 text-slate-500 dark:bg-white/5 dark:text-slate-400"
                   )}>
                     {route.estado.replace('_', ' ')}
                   </span>
                 </div>
-                <h4 className="font-bold text-sm text-slate-800 dark:text-slate-200 mb-1">Reponedor ID: {route.id_reponedor}</h4>
-                <p className="text-xs text-slate-500">{route.fecha}</p>
+                <h4 className="font-bold text-sm text-slate-800 dark:text-slate-100 mb-1 group-hover:text-brand-blue transition-colors">Reponedor ID: {route.id_reponedor}</h4>
+                <p className="text-xs font-medium text-slate-500 dark:text-slate-400">{route.fecha}</p>
               </button>
             ))}
           </div>
         </div>
 
         {/* Panel Derecho: Mapa Interactivo Leaflet */}
-        <div className="flex-1 bg-white dark:bg-slate-800 rounded-xl border border-brand-gray-border dark:border-slate-700 shadow-sm flex flex-col overflow-hidden h-[600px] relative z-0">
+        <div className="flex-1 glass-card rounded-3xl flex flex-col overflow-hidden h-[600px] relative z-0">
           
           {/* Capa de Información sobre el mapa */}
           {selectedRoute && (
-            <div className="absolute top-4 left-4 z-[400] bg-white/90 dark:bg-slate-800/90 backdrop-blur-md p-4 rounded-xl shadow-lg border border-slate-200 dark:border-slate-700 w-64 pointer-events-none">
-              <h3 className="font-bold text-slate-800 dark:text-slate-200 text-sm">Ruta {selectedRoute.id_ruta}</h3>
-              <p className="text-xl font-black text-brand-blue">Reponedor {selectedRoute.id_reponedor}</p>
-              <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">
+            <div className="absolute top-6 left-6 z-[400] glass-panel p-5 rounded-2xl shadow-xl border border-slate-200/50 dark:border-white/10 w-72 pointer-events-none transition-all duration-300 animate-fade-in-up">
+              <h3 className="font-black text-slate-800 dark:text-white text-base tracking-tight">Ruta {selectedRoute.id_ruta}</h3>
+              <p className="text-2xl font-black text-brand-blue mt-1 drop-shadow-sm">Reponedor {selectedRoute.id_reponedor}</p>
+              <p className="text-xs font-bold text-slate-500 dark:text-slate-400 mt-2 uppercase tracking-widest">
                 {routeDetails ? `${routeDetails.ruta_puntos?.length || 0} PDVs asignados` : 'Cargando paradas...'}
               </p>
             </div>

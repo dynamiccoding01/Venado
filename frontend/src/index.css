@@ -3,29 +3,59 @@
 @variant dark (&:where(.dark, .dark *));
 
 @theme {
-  /* Corporative Colors */
-  --color-brand-blue: #2563eb; /* Primary Blue */
-  --color-brand-blue-hover: #1d4ed8;
-  --color-brand-red: #ef4444; /* Alerts / Errors */
-  --color-brand-red-hover: #dc2626;
-  --color-brand-gray-bg: #f8fafc; /* Very light gray for app background */
+  /* Corporative Colors - Modernized */
+  --color-brand-blue: #3b82f6; /* Brighter, more electric blue */
+  --color-brand-blue-hover: #2563eb;
+  --color-brand-blue-glow: rgba(59, 130, 246, 0.4);
+  --color-brand-red: #f43f5e; /* Modern rose/red */
+  --color-brand-red-hover: #e11d48;
+  
+  --color-brand-gray-bg: #f8fafc;
   --color-brand-gray-border: #e2e8f0;
   --color-brand-gray-text: #64748b;
   --color-brand-white: #ffffff;
+  
+  /* Dark Mode Plomo Oscuro Palette */
+  --color-dark-bg: #09090b; /* zinc-950 */
+  --color-dark-card: #18181b; /* zinc-900 */
+  --color-dark-border: #27272a; /* zinc-800 */
 }
 
 @layer base {
   html, body {
-    @apply bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 antialiased h-full w-full m-0 p-0 transition-colors duration-300;
+    @apply bg-slate-50 dark:bg-dark-bg text-slate-800 dark:text-slate-100 antialiased h-full w-full m-0 p-0 transition-colors duration-500;
     font-family: 'Inter', system-ui, -apple-system, sans-serif;
   }
   
   #root {
-    @apply h-full w-full flex bg-slate-50 dark:bg-slate-900 transition-colors duration-300;
+    @apply h-full w-full flex bg-slate-50 dark:bg-dark-bg transition-colors duration-500;
   }
 }
 
-/* Scrollbar customization for a cleaner look */
+@layer utilities {
+  .glass-card {
+    @apply bg-white/80 dark:bg-dark-card/90 backdrop-blur-xl border border-white/20 dark:border-white/5 shadow-xl shadow-slate-200/50 dark:shadow-black/50 transition-all duration-300;
+  }
+  .glass-panel {
+    @apply bg-white/60 dark:bg-dark-bg/60 backdrop-blur-md border border-white/40 dark:border-white/10 transition-all duration-300;
+  }
+  .glass-header {
+    @apply bg-white/70 dark:bg-dark-bg/80 backdrop-blur-lg border-b border-white/20 dark:border-white/5 shadow-sm transition-all duration-300;
+  }
+  .animate-fade-in-up {
+    animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+  .hover-lift {
+    @apply transition-all duration-300 hover:-translate-y-1.5 hover:shadow-2xl hover:shadow-brand-blue/20 dark:hover:shadow-brand-blue/10;
+  }
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(15px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Scrollbar customization */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
@@ -34,8 +64,8 @@
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  @apply bg-slate-300 rounded-full;
+  @apply bg-slate-300 dark:bg-zinc-700 rounded-full transition-colors;
 }
 ::-webkit-scrollbar-thumb:hover {
-  @apply bg-slate-400;
+  @apply bg-slate-400 dark:bg-zinc-600;
 }

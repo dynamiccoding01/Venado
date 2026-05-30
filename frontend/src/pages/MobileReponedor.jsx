@@ -78,126 +78,126 @@ export function MobileReponedor() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-100 flex items-center justify-center p-4 font-sans">
+    <div className="min-h-screen bg-slate-100 dark:bg-dark-bg flex items-center justify-center p-4 font-sans transition-colors duration-500">
       
       {/* SIMULADOR DE TELÉFONO */}
-      <div className="w-[375px] h-[812px] bg-white rounded-[40px] shadow-[0_0_50px_-10px_rgba(0,0,0,0.2)] border-[8px] border-slate-900 overflow-hidden flex flex-col relative">
+      <div className="w-[375px] h-[812px] bg-slate-50 dark:bg-dark-card rounded-[50px] shadow-[0_0_80px_-15px_rgba(0,0,0,0.3)] border-[12px] border-slate-900 dark:border-black overflow-hidden flex flex-col relative">
         
         {/* Top Notch Simulator */}
-        <div className="absolute top-0 w-full h-7 flex justify-center z-50">
-          <div className="w-32 h-5 bg-slate-900 rounded-b-2xl"></div>
+        <div className="absolute top-0 w-full h-8 flex justify-center z-50">
+          <div className="w-36 h-6 bg-slate-900 dark:bg-black rounded-b-3xl"></div>
         </div>
 
         {/* Status Bar (Simulated) */}
-        <div className="h-10 bg-brand-blue w-full shrink-0 flex justify-between items-end px-6 pb-1 text-white text-xs font-medium">
+        <div className="h-12 bg-brand-blue dark:bg-slate-900 w-full shrink-0 flex justify-between items-end px-7 pb-1.5 text-white text-xs font-bold transition-colors">
           <span>{new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
-          <div className="flex gap-1 items-center">
-            <span className="w-3 h-3 rounded-full bg-white animate-pulse"></span>
+          <div className="flex gap-1.5 items-center">
+            <span className="w-2.5 h-2.5 rounded-full bg-white animate-pulse"></span>
             <span>LTE</span>
           </div>
         </div>
 
         {/* HEADER DE LA APP */}
-        <div className="bg-brand-blue px-6 pb-6 pt-4 text-white shrink-0 shadow-md z-10 relative">
-          <div className="flex justify-between items-center mb-4">
-            <div className="flex items-center gap-2">
-               <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
-                 <User size={16} />
+        <div className="bg-brand-blue dark:bg-slate-900 px-6 pb-6 pt-5 text-white shrink-0 shadow-lg z-10 relative transition-colors">
+          <div className="flex justify-between items-center mb-5">
+            <div className="flex items-center gap-3">
+               <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center shadow-inner">
+                 <User size={18} strokeWidth={2.5} />
                </div>
                <div>
-                 <p className="text-[10px] font-medium text-blue-200 uppercase tracking-wider">Reponedor 5</p>
-                 <p className="font-bold text-sm">Carlos Méndez</p>
+                 <p className="text-[10px] font-bold text-blue-200 dark:text-slate-400 uppercase tracking-widest drop-shadow-sm">Reponedor 5</p>
+                 <p className="font-black text-base">Carlos Méndez</p>
                </div>
             </div>
             {clima && (
-              <div className="flex items-center gap-1 text-xs font-semibold bg-white/10 px-2 py-1 rounded-full">
-                <CloudRain size={14} /> {clima.temperatura}°C
+              <div className="flex items-center gap-1.5 text-xs font-bold bg-white/20 dark:bg-white/10 px-3 py-1.5 rounded-full shadow-sm">
+                <CloudRain size={16} /> {clima.temperatura}°C
               </div>
             )}
           </div>
           
-          <div className="bg-white/10 rounded-xl p-4 border border-white/20 backdrop-blur-sm">
-            <p className="text-xs text-blue-200 uppercase tracking-widest font-semibold mb-1">Ruta #1 (Optimizada)</p>
-            <h2 className="text-xl font-bold">Zona Central</h2>
-            <div className="flex justify-between mt-3 text-sm font-medium">
+          <div className="bg-white/10 dark:bg-white/5 rounded-2xl p-5 border border-white/20 dark:border-white/10 backdrop-blur-md shadow-xl">
+            <p className="text-[10px] text-blue-200 dark:text-slate-400 uppercase tracking-widest font-bold mb-1">Ruta #1 (Optimizada)</p>
+            <h2 className="text-2xl font-black drop-shadow-md">Zona Central</h2>
+            <div className="flex justify-between mt-4 text-sm font-bold">
               <span>Progreso: {progressPct}%</span>
               <span>{completedCount} / {routeTasks.length} PDVs</span>
             </div>
             {/* Progress Bar */}
-            <div className="mt-2 h-1.5 w-full bg-black/20 rounded-full overflow-hidden">
-              <div className="h-full bg-white rounded-full transition-all duration-500" style={{ width: `${progressPct}%` }}></div>
+            <div className="mt-2.5 h-2 w-full bg-black/20 dark:bg-black/40 rounded-full overflow-hidden">
+              <div className="h-full bg-white rounded-full transition-all duration-700 ease-out shadow-[0_0_10px_rgba(255,255,255,0.8)]" style={{ width: `${progressPct}%` }}></div>
             </div>
           </div>
         </div>
 
         {/* MAIN SCROLLABLE CONTENT */}
-        <div className="flex-1 overflow-y-auto bg-slate-50 pb-24">
+        <div className="flex-1 overflow-y-auto bg-slate-50 dark:bg-dark-bg pb-24 transition-colors">
           
           {/* Botón Principal (Check-In) */}
           <div className="p-6">
             {!activePdv ? (
-               <div className="bg-emerald-500 text-white p-5 rounded-2xl shadow-sm text-center">
-                 <CheckCircle size={32} className="mx-auto mb-2" />
-                 <h3 className="font-bold text-lg">Ruta Completada</h3>
-                 <p className="text-sm opacity-90">Buen trabajo, has visitado todos los PDVs.</p>
+               <div className="bg-emerald-500 text-white p-6 rounded-3xl shadow-lg shadow-emerald-500/30 text-center animate-fade-in-up">
+                 <CheckCircle size={40} className="mx-auto mb-3" />
+                 <h3 className="font-black text-xl tracking-tight">Ruta Completada</h3>
+                 <p className="text-sm font-medium opacity-90 mt-1">Buen trabajo, has visitado todos los PDVs.</p>
                </div>
             ) : !isCheckedIn ? (
               <button 
                 onClick={() => setIsCheckedIn(true)}
-                className="w-full bg-brand-blue text-white py-4 rounded-2xl shadow-lg font-bold text-lg flex items-center justify-center gap-2 transform active:scale-95 transition-transform"
+                className="w-full bg-brand-blue text-white py-4.5 rounded-3xl shadow-lg shadow-brand-blue/30 font-black text-lg flex items-center justify-center gap-3 transform active:scale-95 transition-all hover:bg-brand-blue-hover animate-fade-in-up"
               >
                 <MapPin size={24} />
                 Hacer Check-In (PDV {activePdv.orden})
               </button>
             ) : (
-              <div className="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 relative overflow-hidden">
-                <div className="absolute top-0 left-0 w-1 h-full bg-yellow-400"></div>
-                <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider">En Ubicación</h3>
-                <h4 className="text-lg font-bold text-slate-800 mt-1">{activePdv.pdv.nombre_pdv}</h4>
-                <p className="text-xs text-slate-500 font-mono mt-1">{activePdv.pdv.codigo_gv}</p>
+              <div className="bg-white dark:bg-dark-card p-6 rounded-3xl shadow-xl shadow-black/5 border border-slate-200/50 dark:border-white/5 relative overflow-hidden animate-fade-in-up">
+                <div className="absolute top-0 left-0 w-1.5 h-full bg-amber-400"></div>
+                <h3 className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest">En Ubicación</h3>
+                <h4 className="text-xl font-black text-slate-800 dark:text-white mt-1 leading-tight">{activePdv.pdv.nombre_pdv}</h4>
+                <p className="text-xs text-slate-500 dark:text-slate-400 font-mono font-bold mt-1.5">{activePdv.pdv.codigo_gv}</p>
                 
                 {/* Tareas Activas */}
-                <div className="mt-4 flex flex-col gap-3">
+                <div className="mt-5 flex flex-col gap-3.5">
                   <button 
                     onClick={() => setCurrentTask('inventory')}
                     className={clsx(
-                      "flex items-center justify-between p-3 rounded-xl border transition-colors",
-                      currentTask === 'inventory' ? "bg-blue-50 border-brand-blue" : "bg-slate-50 border-slate-200"
+                      "flex items-center justify-between p-3.5 rounded-2xl border-2 transition-all duration-300",
+                      currentTask === 'inventory' ? "bg-brand-blue/5 border-brand-blue" : "bg-slate-50 dark:bg-dark-bg border-slate-200 dark:border-white/5 hover:border-brand-blue/50"
                     )}
                   >
-                    <div className="flex items-center gap-3">
-                      <div className={clsx("p-2 rounded-lg", currentTask === 'inventory' ? "bg-brand-blue text-white" : "bg-white text-slate-400")}>
-                        <Package size={16} />
+                    <div className="flex items-center gap-4">
+                      <div className={clsx("p-2.5 rounded-xl transition-colors", currentTask === 'inventory' ? "bg-brand-blue text-white shadow-md shadow-brand-blue/20" : "bg-white dark:bg-dark-card text-slate-400 dark:text-slate-500 shadow-sm")}>
+                        <Package size={18} />
                       </div>
-                      <span className={clsx("font-medium", currentTask === 'inventory' ? "text-brand-blue" : "text-slate-600")}>Conteo de Stock</span>
+                      <span className={clsx("font-bold text-sm", currentTask === 'inventory' ? "text-brand-blue" : "text-slate-600 dark:text-slate-300")}>Conteo de Stock</span>
                     </div>
-                    {currentTask !== 'inventory' && <div className="w-4 h-4 rounded-full border-2 border-slate-300"></div>}
-                    {currentTask === 'inventory' && <div className="w-4 h-4 rounded-full border-4 border-brand-blue bg-white"></div>}
+                    {currentTask !== 'inventory' && <div className="w-5 h-5 rounded-full border-2 border-slate-300 dark:border-slate-600"></div>}
+                    {currentTask === 'inventory' && <div className="w-5 h-5 rounded-full border-[5px] border-brand-blue bg-white"></div>}
                   </button>
 
                   <button 
                     onClick={() => setCurrentTask('photos')}
                     className={clsx(
-                      "flex items-center justify-between p-3 rounded-xl border transition-colors",
-                      currentTask === 'photos' ? "bg-blue-50 border-brand-blue" : "bg-slate-50 border-slate-200"
+                      "flex items-center justify-between p-3.5 rounded-2xl border-2 transition-all duration-300",
+                      currentTask === 'photos' ? "bg-brand-blue/5 border-brand-blue" : "bg-slate-50 dark:bg-dark-bg border-slate-200 dark:border-white/5 hover:border-brand-blue/50"
                     )}
                   >
-                    <div className="flex items-center gap-3">
-                      <div className={clsx("p-2 rounded-lg", currentTask === 'photos' ? "bg-brand-blue text-white" : "bg-white text-slate-400")}>
-                        <Camera size={16} />
+                    <div className="flex items-center gap-4">
+                      <div className={clsx("p-2.5 rounded-xl transition-colors", currentTask === 'photos' ? "bg-brand-blue text-white shadow-md shadow-brand-blue/20" : "bg-white dark:bg-dark-card text-slate-400 dark:text-slate-500 shadow-sm")}>
+                        <Camera size={18} />
                       </div>
-                      <span className={clsx("font-medium", currentTask === 'photos' ? "text-brand-blue" : "text-slate-600")}>Fotos de Góndola</span>
+                      <span className={clsx("font-bold text-sm", currentTask === 'photos' ? "text-brand-blue" : "text-slate-600 dark:text-slate-300")}>Fotos de Góndola</span>
                     </div>
-                    {currentTask !== 'photos' && <div className="w-4 h-4 rounded-full border-2 border-slate-300"></div>}
-                    {currentTask === 'photos' && <div className="w-4 h-4 rounded-full border-4 border-brand-blue bg-white"></div>}
+                    {currentTask !== 'photos' && <div className="w-5 h-5 rounded-full border-2 border-slate-300 dark:border-slate-600"></div>}
+                    {currentTask === 'photos' && <div className="w-5 h-5 rounded-full border-[5px] border-brand-blue bg-white"></div>}
                   </button>
                 </div>
 
                 <button 
                   onClick={handleFinishVisit}
-                  className="mt-4 w-full bg-slate-900 text-white py-3 rounded-xl font-bold shadow flex justify-center items-center gap-2"
+                  className="mt-6 w-full bg-slate-900 dark:bg-brand-blue text-white py-4 rounded-2xl font-black text-sm shadow-xl flex justify-center items-center gap-2 transform active:scale-95 transition-transform"
                 >
-                  <CheckCircle size={18} /> Finalizar Visita
+                  <CheckCircle size={20} /> Finalizar Visita
                 </button>
               </div>
             )}
@@ -205,12 +205,12 @@ export function MobileReponedor() {
 
           {/* Secuencia de la Ruta */}
           <div className="px-6 pb-6">
-            <h3 className="text-sm font-bold text-slate-800 mb-4 flex justify-between items-center">
-              <span>Secuencia de Visitas</span>
-              <span className="text-xs font-medium text-brand-blue">Lista API</span>
+            <h3 className="text-sm font-black text-slate-800 dark:text-white mb-5 flex justify-between items-center">
+              <span className="tracking-tight">Secuencia de Visitas</span>
+              <span className="text-[10px] font-bold text-brand-blue bg-brand-blue/10 px-2 py-1 rounded-md uppercase">Lista API</span>
             </h3>
             
-            <div className="relative border-l-2 border-slate-200 ml-4 space-y-6">
+            <div className="relative border-l-2 border-slate-200 dark:border-slate-700 ml-4 space-y-7">
               {loading ? (
                 <p className="text-xs text-slate-500 pl-4">Cargando...</p>
               ) : routeTasks.map((task, i) => {
@@ -218,32 +218,33 @@ export function MobileReponedor() {
                 const isCurrent = task.id_ruta_punto === activePdv?.id_ruta_punto;
 
                 return (
-                  <div key={task.id_ruta_punto} className="relative pl-6">
+                  <div key={task.id_ruta_punto} className="relative pl-7 group">
                     {/* Timeline Dot */}
                     <div className={clsx(
-                      "absolute -left-[11px] top-1 w-5 h-5 rounded-full ring-4 ring-slate-50 flex items-center justify-center",
-                      isCompleted ? "bg-brand-blue" :
-                      isCurrent ? "bg-yellow-400" :
-                      "bg-slate-300"
+                      "absolute -left-[11px] top-1.5 w-5 h-5 rounded-full ring-4 flex items-center justify-center transition-colors",
+                      isCompleted ? "bg-brand-blue ring-slate-50 dark:ring-dark-bg shadow-sm" :
+                      isCurrent ? "bg-amber-400 ring-slate-50 dark:ring-dark-bg shadow-md shadow-amber-400/40" :
+                      "bg-slate-200 dark:bg-slate-700 ring-slate-50 dark:ring-dark-bg"
                     )}>
-                      {isCompleted && <CheckCircle size={10} className="text-white" />}
-                      {isCurrent && <div className="w-2 h-2 rounded-full bg-white"></div>}
+                      {isCompleted && <CheckCircle size={12} className="text-white" />}
+                      {isCurrent && <div className="w-2.5 h-2.5 rounded-full bg-white"></div>}
                     </div>
                     
                     {/* Task Card */}
                     <div className={clsx(
-                      "p-3 rounded-xl border",
-                      isCurrent ? "bg-white border-yellow-200 shadow-sm" : "bg-transparent border-transparent"
+                      "p-4 rounded-2xl border-2 transition-all duration-300",
+                      isCurrent ? "bg-white dark:bg-dark-card border-amber-300 dark:border-amber-500/50 shadow-lg shadow-amber-500/5 -translate-y-1" : 
+                      "bg-transparent border-transparent hover:bg-slate-100 dark:hover:bg-dark-card/50"
                     )}>
-                      <div className="flex justify-between items-start mb-1">
-                        <span className="text-[10px] font-bold text-slate-400 font-mono">{task.pdv.codigo_gv}</span>
-                        <span className="text-[10px] font-bold text-slate-500 flex items-center gap-1">Orden {task.orden}</span>
+                      <div className="flex justify-between items-start mb-1.5">
+                        <span className="text-[10px] font-bold text-slate-400 dark:text-slate-500 font-mono tracking-wider">{task.pdv.codigo_gv}</span>
+                        <span className="text-[10px] font-bold text-brand-blue bg-brand-blue/10 px-1.5 py-0.5 rounded uppercase flex items-center gap-1">Orden {task.orden}</span>
                       </div>
                       <h4 className={clsx(
-                        "font-bold text-sm",
-                        isCompleted ? "text-slate-500 line-through" : "text-slate-800"
+                        "font-bold text-sm tracking-tight",
+                        isCompleted ? "text-slate-400 dark:text-slate-600 line-through" : "text-slate-800 dark:text-slate-100"
                       )}>{task.pdv.nombre_pdv}</h4>
-                      <p className="text-xs text-slate-500 mt-0.5">Lat: {task.pdv.latitud.toFixed(3)}</p>
+                      <p className="text-xs font-medium text-slate-500 dark:text-slate-400 mt-1">Lat: {task.pdv.latitud.toFixed(3)}</p>
                     </div>
                   </div>
                 )
@@ -255,8 +256,8 @@ export function MobileReponedor() {
       </div>
       
       {/* Botón flotante para salir del simulador */}
-      <a href="/" className="fixed top-8 right-8 bg-white px-4 py-2 rounded-lg shadow font-bold text-slate-800 flex items-center gap-2 hover:bg-slate-50">
-        <ChevronLeft size={20} /> Volver al Desktop
+      <a href="/" className="fixed top-8 right-8 glass-panel px-5 py-3 rounded-2xl shadow-xl font-bold text-slate-800 dark:text-slate-200 flex items-center gap-3 hover:scale-105 transition-transform z-50">
+        <ChevronLeft size={20} className="text-brand-blue" /> Volver al Desktop
       </a>
     </div>
   );

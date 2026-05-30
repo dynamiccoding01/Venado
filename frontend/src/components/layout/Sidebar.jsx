@@ -13,45 +13,41 @@ const navItems = [
 
 export function Sidebar() {
   return (
-    <aside className="w-[64px] bg-white dark:bg-slate-800 border-r border-brand-gray-border dark:border-slate-700 flex flex-col items-center py-4 h-full shrink-0 shadow-sm z-10 transition-colors duration-300">
-      {/* Logo Placeholder (Small) */}
-      <div className="w-10 h-10 bg-brand-blue rounded-lg flex items-center justify-center mb-8 shadow-sm">
-        <span className="text-white font-bold text-lg">C</span>
+    <aside className="w-[80px] glass-panel border-r border-slate-200/50 dark:border-white/5 flex flex-col items-center py-6 h-full shrink-0 z-30 transition-colors duration-500">
+      {/* Logo */}
+      <div className="w-12 h-12 bg-gradient-to-br from-brand-blue to-blue-400 rounded-2xl flex items-center justify-center mb-10 shadow-lg shadow-brand-blue/30 transform transition-transform hover:scale-105">
+        <span className="text-white font-black text-xl tracking-tighter">V</span>
       </div>
 
       {/* Navigation Icons */}
-      <nav className="flex-1 flex flex-col gap-4 w-full px-2">
+      <nav className="flex-1 flex flex-col gap-5 w-full px-3">
         {navItems.map((item) => (
           <NavLink
             key={item.id}
             to={item.path}
-            title={item.label}
             className={({ isActive }) =>
               clsx(
-                "w-full aspect-square rounded-xl flex items-center justify-center transition-all duration-200 group relative",
+                "w-full aspect-square rounded-2xl flex items-center justify-center transition-all duration-300 group relative",
                 isActive 
-                  ? "bg-blue-50 dark:bg-brand-blue/20 text-brand-blue shadow-sm ring-1 ring-blue-100 dark:ring-brand-blue/30" 
-                  : "text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700 hover:text-slate-600 dark:hover:text-slate-200"
+                  ? "bg-brand-blue text-white shadow-lg shadow-brand-blue/40 scale-105" 
+                  : "text-slate-400 hover:bg-slate-100/50 dark:hover:bg-dark-card hover:text-slate-700 dark:hover:text-slate-200 hover:scale-105"
               )
             }
           >
             {({ isActive }) => (
               <>
-                <item.icon size={22} strokeWidth={isActive ? 2.5 : 2} />
+                <item.icon size={24} strokeWidth={isActive ? 2.5 : 2} className={clsx("transition-transform duration-300", isActive && "scale-110")} />
                 
                 {/* Tooltip on hover */}
-                <div className="absolute left-14 bg-slate-800 text-white text-xs px-2 py-1 rounded opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all whitespace-nowrap z-50 pointer-events-none">
+                <div className="absolute left-16 bg-slate-800 dark:bg-white text-white dark:text-slate-900 text-xs font-bold px-3 py-1.5 rounded-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 whitespace-nowrap z-50 pointer-events-none shadow-xl transform translate-x-2 group-hover:translate-x-0">
                   {item.label}
+                  <div className="absolute top-1/2 -left-1 -translate-y-1/2 w-2 h-2 bg-slate-800 dark:bg-white rotate-45"></div>
                 </div>
               </>
             )}
           </NavLink>
         ))}
       </nav>
-
-      {/* Bottom Actions (Empty for now) */}
-      <div className="mt-auto w-full px-2 flex flex-col gap-2">
-      </div>
     </aside>
   );
 }

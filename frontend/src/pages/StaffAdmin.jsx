@@ -60,92 +60,92 @@ export function StaffAdmin() {
   };
 
   return (
-    <div className="flex flex-col gap-6 pb-8 h-full">
+    <div className="flex flex-col gap-6 pb-8 h-full animate-fade-in-up">
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4">
         <div>
-          <h2 className="text-2xl font-bold text-slate-800 tracking-tight">Gestión de Personal</h2>
-          <p className="text-sm text-slate-500 mt-1">Supervisa y administra al equipo de campo y oficina.</p>
+          <h2 className="text-3xl font-black text-slate-800 dark:text-white tracking-tight">Gestión de Personal</h2>
+          <p className="text-sm font-medium text-slate-500 dark:text-slate-400 mt-1">Supervisa y administra al equipo de campo y oficina.</p>
         </div>
         <div className="flex gap-3">
-          <button className="bg-brand-blue hover:bg-brand-blue-hover text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2 shadow-sm transition-colors">
-            <Plus size={16} />
+          <button className="bg-brand-blue hover:bg-brand-blue-hover text-white px-5 py-2.5 rounded-xl text-sm font-bold flex items-center gap-2 shadow-lg shadow-brand-blue/30 transition-all hover:scale-105 active:scale-95">
+            <Plus size={18} strokeWidth={3} />
             Nuevo Miembro
           </button>
         </div>
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="bg-white p-5 rounded-xl border border-brand-gray-border shadow-sm flex items-center gap-4">
-          <div className="w-12 h-12 rounded-full bg-blue-50 flex items-center justify-center text-brand-blue font-bold text-xl">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+        <div className="glass-card p-6 rounded-3xl flex items-center gap-5 hover-lift cursor-pointer group">
+          <div className="w-14 h-14 rounded-2xl bg-brand-blue/10 dark:bg-brand-blue/20 flex items-center justify-center text-brand-blue font-black text-2xl group-hover:scale-110 transition-transform">
             {staffList.filter(s => s.status === 'Online').length}
           </div>
           <div>
-            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Activos en Campo</p>
-            <p className="text-sm font-medium text-slate-700">Conectados ahora mismo</p>
+            <p className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest">Activos en Campo</p>
+            <p className="text-sm font-bold text-slate-700 dark:text-slate-200 mt-0.5">Conectados ahora mismo</p>
           </div>
         </div>
-        <div className="bg-white p-5 rounded-xl border border-brand-gray-border shadow-sm flex items-center gap-4">
-          <div className="w-12 h-12 rounded-full bg-red-50 flex items-center justify-center text-brand-red font-bold text-xl">
+        <div className="glass-card p-6 rounded-3xl flex items-center gap-5 hover-lift cursor-pointer group">
+          <div className="w-14 h-14 rounded-2xl bg-brand-red/10 dark:bg-brand-red/20 flex items-center justify-center text-brand-red font-black text-2xl group-hover:scale-110 transition-transform">
             {staffList.filter(s => s.battery !== null && s.battery < 20).length}
           </div>
           <div>
-            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Batería Crítica</p>
-            <p className="text-sm font-medium text-slate-700">Equipos que requieren atención</p>
+            <p className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest">Batería Crítica</p>
+            <p className="text-sm font-bold text-slate-700 dark:text-slate-200 mt-0.5">Equipos que requieren atención</p>
           </div>
         </div>
-        <div className="bg-white p-5 rounded-xl border border-brand-gray-border shadow-sm flex items-center gap-4">
-          <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center text-slate-600 font-bold text-xl">
+        <div className="glass-card p-6 rounded-3xl flex items-center gap-5 hover-lift cursor-pointer group">
+          <div className="w-14 h-14 rounded-2xl bg-slate-100 dark:bg-white/10 flex items-center justify-center text-slate-600 dark:text-white font-black text-2xl group-hover:scale-110 transition-transform">
             {staffList.length}
           </div>
           <div>
-            <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Total Personal</p>
-            <p className="text-sm font-medium text-slate-700">Plantilla completa</p>
+            <p className="text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest">Total Personal</p>
+            <p className="text-sm font-bold text-slate-700 dark:text-slate-200 mt-0.5">Plantilla completa</p>
           </div>
         </div>
       </div>
 
       {/* Main Container */}
-      <div className="bg-white rounded-xl border border-brand-gray-border shadow-sm flex flex-col flex-1 min-h-0">
+      <div className="glass-card rounded-3xl flex flex-col flex-1 min-h-0 overflow-hidden">
         
         {/* Filters */}
-        <div className="p-4 border-b border-brand-gray-border flex flex-wrap gap-4 items-end bg-slate-50/50 rounded-t-xl">
+        <div className="p-6 border-b border-slate-200/50 dark:border-white/5 flex flex-wrap gap-4 items-end bg-white/40 dark:bg-dark-bg/20">
           <div className="flex-1 min-w-[250px]">
-            <label className="block text-xs font-medium text-slate-500 mb-1.5">Búsqueda rápida</label>
+            <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-2 uppercase tracking-wider">Búsqueda rápida</label>
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
               <input 
                 type="text" 
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Nombre del trabajador..." 
-                className="w-full pl-9 pr-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-1 focus:ring-brand-blue outline-none" 
+                className="w-full pl-10 pr-4 py-2.5 glass-panel rounded-xl text-sm font-medium text-slate-800 dark:text-slate-200 focus:ring-2 focus:ring-brand-blue/50 outline-none transition-all" 
               />
             </div>
           </div>
           <div className="w-48">
-            <label className="block text-xs font-medium text-slate-500 mb-1.5">Rol</label>
+            <label className="block text-xs font-bold text-slate-500 dark:text-slate-400 mb-2 uppercase tracking-wider">Rol</label>
             <select 
               value={roleFilter}
               onChange={(e) => setRoleFilter(e.target.value)}
-              className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm outline-none bg-white cursor-pointer"
+              className="w-full glass-panel rounded-xl px-4 py-2.5 text-sm font-medium text-slate-800 dark:text-slate-200 outline-none cursor-pointer appearance-none"
             >
-              <option value="Todos">Todos los roles</option>
-              <option value="Reponedor">Reponedores</option>
-              <option value="Supervisor">Supervisores</option>
+              <option value="Todos" className="text-slate-800">Todos los roles</option>
+              <option value="Reponedor" className="text-slate-800">Reponedores</option>
+              <option value="Supervisor" className="text-slate-800">Supervisores</option>
             </select>
           </div>
-          <button className="bg-white border border-slate-200 text-slate-600 px-4 py-2 rounded-lg text-sm font-medium hover:bg-slate-50 transition-colors flex items-center gap-2 h-[38px]">
-            <Filter size={16} /> Más filtros
+          <button className="glass-panel text-slate-700 dark:text-slate-200 px-5 py-2.5 rounded-xl text-sm font-bold hover:bg-slate-100 dark:hover:bg-dark-card transition-colors flex items-center gap-2 h-[44px]">
+            <Filter size={18} /> Más filtros
           </button>
         </div>
 
         {/* Table */}
-        <div className="overflow-x-auto flex-1">
+        <div className="overflow-x-auto flex-1 p-2">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="bg-white text-xs font-semibold text-slate-500 uppercase tracking-wider border-b border-brand-gray-border">
+              <tr className="text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest border-b border-slate-200/50 dark:border-white/5">
                 <th className="px-6 py-4">Usuario</th>
                 <th className="px-6 py-4">Rol y Región</th>
                 <th className="px-6 py-4 text-center">Estado de Red</th>
@@ -156,38 +156,38 @@ export function StaffAdmin() {
             </thead>
             <tbody className="text-sm">
               {filteredStaff.map((staff) => (
-                <tr key={staff.id} className="border-b border-slate-100 hover:bg-slate-50 transition-colors group">
+                <tr key={staff.id} className="border-b border-slate-100/50 dark:border-white/5 hover:bg-slate-50/50 dark:hover:bg-dark-card/50 transition-colors group">
                   <td className="px-6 py-4">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full bg-slate-200 flex items-center justify-center font-bold text-slate-600 shrink-0">
+                    <div className="flex items-center gap-4">
+                      <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-slate-200 to-slate-300 dark:from-slate-700 dark:to-slate-600 flex items-center justify-center font-black text-slate-700 dark:text-white shrink-0 shadow-sm group-hover:scale-105 transition-transform">
                         {staff.name.charAt(0)}
                       </div>
                       <div>
-                        <p className="font-bold text-slate-800">{staff.name}</p>
-                        <p className="text-xs text-slate-500 font-mono mt-0.5">{staff.id}</p>
+                        <p className="font-bold text-slate-800 dark:text-slate-100">{staff.name}</p>
+                        <p className="text-xs text-slate-500 dark:text-slate-400 font-mono mt-0.5">{staff.id}</p>
                       </div>
                     </div>
                   </td>
                   <td className="px-6 py-4">
-                    <p className="font-bold text-slate-700">{staff.role}</p>
-                    <p className="text-xs text-slate-500 mt-0.5">{staff.region}</p>
+                    <p className="font-bold text-slate-700 dark:text-slate-200">{staff.role}</p>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 font-medium mt-0.5">{staff.region}</p>
                   </td>
                   <td className="px-6 py-4">
                     <div className="flex flex-col items-center">
                       <span className={clsx(
-                        "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold",
-                        staff.status === 'Online' ? "bg-blue-50 text-brand-blue" : 
-                        staff.status === 'Break' ? "bg-yellow-50 text-yellow-600" : 
-                        "bg-slate-100 text-slate-500"
+                        "inline-flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-bold shadow-sm",
+                        staff.status === 'Online' ? "bg-brand-blue/10 text-brand-blue" : 
+                        staff.status === 'Break' ? "bg-amber-500/10 text-amber-500" : 
+                        "bg-slate-100 dark:bg-white/5 text-slate-500 dark:text-slate-400"
                       )}>
                         <span className={clsx("w-2 h-2 rounded-full", 
-                          staff.status === 'Online' ? "bg-brand-blue" : 
-                          staff.status === 'Break' ? "bg-yellow-500" : 
+                          staff.status === 'Online' ? "bg-brand-blue shadow-[0_0_8px_rgba(59,130,246,0.8)]" : 
+                          staff.status === 'Break' ? "bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.8)]" : 
                           "bg-slate-400"
                         )}></span>
                         {staff.status}
                       </span>
-                      <span className="text-[10px] text-slate-400 mt-1">{staff.lastSeen}</span>
+                      <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mt-1.5">{staff.lastSeen}</span>
                     </div>
                   </td>
                   <td className="px-6 py-4">
@@ -197,27 +197,27 @@ export function StaffAdmin() {
                           {getBatteryIcon(staff.battery)}
                           <span className={clsx(
                             "font-bold",
-                            staff.battery < 20 ? "text-brand-red" : "text-slate-700"
+                            staff.battery < 20 ? "text-brand-red" : "text-slate-700 dark:text-slate-200"
                           )}>{staff.battery}%</span>
                         </div>
-                        <span className="text-[10px] text-slate-400">App v3.0.1</span>
+                        <span className="text-[10px] font-bold text-slate-400">App v3.0.1</span>
                       </div>
                     ) : (
-                      <span className="text-slate-400 text-xs flex justify-center">-</span>
+                      <span className="text-slate-400 dark:text-slate-500 text-xs flex justify-center">-</span>
                     )}
                   </td>
                   <td className="px-6 py-4">
                     <div className="flex justify-center">
                       {staff.vehicle ? (
-                         <div className="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center">
+                         <div className="w-10 h-10 rounded-xl glass-panel flex items-center justify-center transform group-hover:scale-110 transition-transform">
                             {getVehicleIcon(staff.vehicle)}
                          </div>
-                      ) : <span className="text-slate-400">-</span>}
+                      ) : <span className="text-slate-400 dark:text-slate-600">-</span>}
                     </div>
                   </td>
                   <td className="px-6 py-4 text-right">
-                    <button className="text-slate-400 hover:text-brand-blue p-2 rounded-lg transition-colors">
-                      <MoreVertical size={18} />
+                    <button className="text-slate-400 dark:text-slate-500 hover:text-brand-blue dark:hover:text-brand-blue p-2 rounded-xl hover:bg-brand-blue/10 transition-colors">
+                      <MoreVertical size={20} />
                     </button>
                   </td>
                 </tr>
