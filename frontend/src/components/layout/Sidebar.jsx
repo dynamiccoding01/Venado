@@ -2,6 +2,7 @@ import React from 'react';
 import { Home, Route, Package, Users, BarChart3, Settings } from 'lucide-react';
 import { NavLink } from 'react-router-dom';
 import clsx from 'clsx';
+import clsx from 'clsx';
 import logo from '../../assets/logo.jpg';
 
 const navItems = [
@@ -9,6 +10,7 @@ const navItems = [
   { id: 'routes', icon: Route, label: 'Gestión de Rutas', path: '/routes' },
   { id: 'inventory', icon: Package, label: 'PDVs', path: '/pdvs' },
   { id: 'staff', icon: Users, label: 'Personal', path: '/staff' },
+  { id: 'catalogs', icon: Settings, label: 'Catálogos', path: '/catalogs' },
   { id: 'reporting', icon: BarChart3, label: 'Reportes KPIs', path: '/reports' },
 ];
 
@@ -23,8 +25,8 @@ export function Sidebar() {
   // Filtrar ítems de navegación por rol
   const visibleNavItems = navItems.filter(item => {
     // Si es admin (1), ve todo.
-    // Si es supervisor (2), no ve staff.
-    if (userRole === 2 && item.id === 'staff') return false;
+    // Si es supervisor (2), no ve staff ni catalogs.
+    if (userRole === 2 && (item.id === 'staff' || item.id === 'catalogs')) return false;
     return true;
   });
 

@@ -90,5 +90,38 @@ export const API = {
       method: 'POST',
       body: JSON.stringify({ token })
     });
+  },
+
+  // PDVs
+  getPdvs: async () => {
+    return apiFetch('/pdvs/');
+  },
+  crearPdv: async (data) => {
+    return apiFetch('/pdvs/', {
+      method: 'POST',
+      body: JSON.stringify(data)
+    });
+  },
+
+  // Mercados
+  getMercados: async () => {
+    return apiFetch('/mercados/');
+  },
+  crearMercado: async (data) => {
+    return apiFetch('/mercados/', {
+      method: 'POST',
+      body: JSON.stringify(data)
+    });
+  },
+
+  // Categorías
+  getCategorias: async () => {
+    return apiFetch('/categorias-cliente/');
+  },
+  crearCategoria: async (data) => {
+    return apiFetch('/categorias-cliente/', {
+      method: 'POST',
+      body: JSON.stringify(data)
+    });
   }
 };

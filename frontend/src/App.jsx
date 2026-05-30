@@ -8,7 +8,9 @@ import { ReportsView } from './pages/ReportsView';
 import { Login } from './pages/Login';
 import { MobileReponedor } from './pages/MobileReponedor';
 import { StaffAdmin } from './pages/StaffAdmin';
+import { StaffAdmin } from './pages/StaffAdmin';
 import { Settings } from './pages/Settings';
+import { CatalogsView } from './pages/CatalogsView';
 import { ThemeProvider } from './context/ThemeContext';
 
 export default function App() {
@@ -61,6 +63,11 @@ export default function App() {
           <Route path="/staff" element={
             <RoleRoute allowedRoles={[1]}>
               <StaffAdmin />
+            </RoleRoute>
+          } />
+          <Route path="/catalogs" element={
+            <RoleRoute allowedRoles={[1]}>
+              <CatalogsView />
             </RoleRoute>
           } />
           <Route path="/settings" element={
