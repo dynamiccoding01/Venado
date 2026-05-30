@@ -6,8 +6,22 @@ const WS_BASE_URL = 'wss://innovahack-gcrh.onrender.com';
  */
 export async function apiFetch(endpoint, options = {}) {
   const url = `${BASE_URL}${endpoint}`;
+  
+  // Try to get token from localStorage
+  let token = null;
+  try {
+    const userStr = localStorage.getItem('user');
+    if (userStr) {
+      const userData = JSON.parse(userStr);
+      token = userData.token;
+    }
+  } catch (e) {
+    // ignore
+  }
+
   const headers = {
     'Content-Type': 'application/json',
+    ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
     ...options.headers,
   };
 
@@ -66,11 +80,9 @@ export const API = {
   actualizarUsuario: (id, data) => apiFetch(`/usuarios/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
   eliminarUsuario: (id) => apiFetch(`/usuarios/${id}`, { method: 'DELETE' }),
   loginUsuario: async (email, password) => {
-    // Simulacion de validacion contra los usuarios de la BD. 
-    // Como el backend encripta el password pero no hay endpoint explicito de login, lo validamos con existencia.
-    const usuarios = await apiFetch('/usuarios/');
-    const user = usuarios.find(u => u.email === email && u.activo === true);
-    if (!user) throw new Error('Credenciales inválidas o usuario inactivo');
-    return user;
+    return apiFetch('/login', {
+      method: 'POST',
+      body: JSON.stringify({ email, password })
+    });
   }
 };
