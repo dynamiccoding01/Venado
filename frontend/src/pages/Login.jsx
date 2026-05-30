@@ -1,8 +1,6 @@
 import React, { useState } from 'react';
 import './LoginScreen.css';
-
-// Usamos una URL temporal para el logo ya que ../assets/logo.jpg no existia
-const logo = "https://placehold.co/130x90?text=Venado";
+import logo from '../assets/logo.jpg';
 
 export function Login() {
   const [showPassword, setShowPassword] = useState(false);
