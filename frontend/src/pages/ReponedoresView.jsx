@@ -23,7 +23,32 @@ export function ReponedoresView() {
   const [wsStatus, setWsStatus] = useState('conectando'); // conectando, conectado, desconectado
 
   useEffect(() => {
-    // Intentar obtener el ID del supervisor logueado
+    // 1. Carga inicial vía HTTP para no tener el mapa vacío
+    API.getPosicionesGps()
+      .then(gpsData => {
+        if (Array.isArray(gpsData)) {
+          // Mapeamos el formato de /gps/ al formato que espera el mapa
+          // (Asumiendo que devuelve { id_reponedor, latitud, longitud, timestamp, ... })
+          const initialReponedores = gpsData.map(pos => ({
+            id: pos.id_reponedor || pos.id,
+            lat: pos.latitud || pos.lat,
+            lon: pos.longitud || pos.lon,
+            estado: 'activo', // O un estado por defecto basado en tiempo
+            ultimo_update: pos.timestamp || pos.creado_en || new Date().toISOString(),
+            pdv_actual: pos.pdv_actual || ''
+          }));
+          
+          // Agrupar por id_reponedor para quedarnos solo con la última posición de cada uno
+          const ultimasPosicionesMap = new Map();
+          initialReponedores.forEach(r => ultimasPosicionesMap.set(r.id, r));
+          
+          // Solo actualizamos si el WS aún no ha llenado los datos
+          setReponedores(prev => prev.length === 0 ? Array.from(ultimasPosicionesMap.values()) : prev);
+        }
+      })
+      .catch(e => console.error("Error cargando posiciones GPS iniciales:", e));
+
+    // 2. Conectar WebSocket para el tiempo real
     let supervisorId = 2; // Por defecto
     try {
       const userStr = localStorage.getItem('user');

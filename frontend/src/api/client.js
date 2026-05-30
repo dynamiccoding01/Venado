@@ -115,6 +115,11 @@ export const API = {
     });
   },
 
+  // GPS / Tracking
+  getPosicionesGps: async () => {
+    return apiFetch('/gps/');
+  },
+
   // Categorías
   getCategorias: async () => {
     return apiFetch('/categorias-cliente/');
