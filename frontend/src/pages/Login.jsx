@@ -49,8 +49,14 @@ export function Login() {
     if (validateForm()) {
       setIsSubmitted(true);
       try {
-        const user = await API.loginUsuario(formData.email, formData.password);
-        localStorage.setItem('user', JSON.stringify(user));
+        const userResponse = await API.loginUsuario(formData.email, formData.password);
+        
+        // Bloquear acceso si es reponedor (id_rol = 3)
+        if (userResponse.usuario?.id_rol === 3 || userResponse.rol === 'reponedor') {
+          throw new Error('No tiene permisos para acceder a la plataforma web.');
+        }
+
+        localStorage.setItem('user', JSON.stringify(userResponse));
         // alert('¡Inicio de sesión exitoso!');
         window.location.href = '/'; // Redirigir al inicio después del login exitoso
       } catch (error) {

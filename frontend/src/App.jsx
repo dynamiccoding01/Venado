@@ -12,13 +12,32 @@ import { Settings } from './pages/Settings';
 import { ThemeProvider } from './context/ThemeContext';
 
 export default function App() {
-  // Componente para proteger las rutas
+  // Componente para proteger las rutas (Autenticación básica)
   const ProtectedRoute = ({ children }) => {
     const user = localStorage.getItem('user');
     const location = useLocation();
 
     if (!user) {
       return <Navigate to="/login" state={{ from: location }} replace />;
+    }
+
+    return children;
+  };
+
+  // Componente para proteger rutas por Rol (RBAC)
+  const RoleRoute = ({ children, allowedRoles }) => {
+    const userStr = localStorage.getItem('user');
+    let userRole = null;
+    
+    if (userStr) {
+      const parsed = JSON.parse(userStr);
+      // Extraemos id_rol, soportando tanto la estructura antigua (user.id_rol) como la nueva (user.usuario.id_rol)
+      userRole = parsed.usuario?.id_rol || parsed.id_rol; 
+    }
+
+    if (!allowedRoles.includes(userRole)) {
+      // Si no tiene permiso, lo mandamos al dashboard
+      return <Navigate to="/" replace />;
     }
 
     return children;
@@ -36,9 +55,19 @@ export default function App() {
           <Route path="/" element={<Dashboard />} />
           <Route path="/routes" element={<RoutesView />} />
           <Route path="/pdvs" element={<PDVAdmin />} />
-          <Route path="/staff" element={<StaffAdmin />} />
           <Route path="/reports" element={<ReportsView />} />
-          <Route path="/settings" element={<Settings />} />
+          
+          {/* Rutas exclusivas para Administradores (id_rol = 1) */}
+          <Route path="/staff" element={
+            <RoleRoute allowedRoles={[1]}>
+              <StaffAdmin />
+            </RoleRoute>
+          } />
+          <Route path="/settings" element={
+            <RoleRoute allowedRoles={[1]}>
+              <Settings />
+            </RoleRoute>
+          } />
         </Route>
       </Routes>
     </BrowserRouter>

@@ -13,6 +13,21 @@ const navItems = [
 ];
 
 export function Sidebar() {
+  const userStr = localStorage.getItem('user');
+  let userRole = null;
+  if (userStr) {
+    const parsed = JSON.parse(userStr);
+    userRole = parsed.usuario?.id_rol || parsed.id_rol;
+  }
+
+  // Filtrar ítems de navegación por rol
+  const visibleNavItems = navItems.filter(item => {
+    // Si es admin (1), ve todo.
+    // Si es supervisor (2), no ve staff.
+    if (userRole === 2 && item.id === 'staff') return false;
+    return true;
+  });
+
   return (
     <aside className="w-[80px] glass-panel border-r border-slate-200/50 dark:border-white/5 flex flex-col items-center py-6 h-full shrink-0 z-30 transition-colors duration-500">
       {/* Logo */}
@@ -22,7 +37,7 @@ export function Sidebar() {
 
       {/* Navigation Icons */}
       <nav className="flex-1 flex flex-col gap-5 w-full px-3">
-        {navItems.map((item) => (
+        {visibleNavItems.map((item) => (
           <NavLink
             key={item.id}
             to={item.path}
