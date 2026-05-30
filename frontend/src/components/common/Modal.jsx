@@ -27,16 +27,16 @@ export function Modal({ isOpen, onClose, title, children, maxWidth = "max-w-2xl"
       {/* Modal Dialog */}
       <div 
         className={clsx(
-          "relative w-full bg-white rounded-2xl shadow-2xl flex flex-col max-h-full overflow-hidden transform transition-all border border-slate-200",
+          "relative w-full bg-white dark:bg-dark-card rounded-2xl shadow-2xl flex flex-col max-h-full overflow-hidden transform transition-all border border-slate-200 dark:border-dark-border",
           maxWidth
         )}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-brand-gray-border bg-slate-50/50">
-          <h3 className="text-lg font-bold text-slate-800 tracking-tight">{title}</h3>
+        <div className="flex items-center justify-between px-6 py-4 border-b border-brand-gray-border dark:border-dark-border bg-slate-50/50 dark:bg-slate-800/30">
+          <h3 className="text-lg font-bold text-slate-800 dark:text-white tracking-tight">{title}</h3>
           <button 
             onClick={onClose}
-            className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition-colors"
+            className="p-2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors"
           >
             <X size={20} />
           </button>
