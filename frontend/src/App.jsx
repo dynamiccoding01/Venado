@@ -8,11 +8,14 @@ import { ReportsView } from './pages/ReportsView';
 import { Login } from './pages/Login';
 import { MobileReponedor } from './pages/MobileReponedor';
 import { StaffAdmin } from './pages/StaffAdmin';
+import { Settings } from './pages/Settings';
+import { ThemeProvider } from './context/ThemeContext';
 
 export default function App() {
   return (
-    <BrowserRouter>
-      <Routes>
+    <ThemeProvider>
+      <BrowserRouter>
+        <Routes>
         {/* Rutas Públicas */}
         <Route path="/login" element={<Login />} />
         <Route path="/mobile" element={<MobileReponedor />} />
@@ -24,8 +27,10 @@ export default function App() {
           <Route path="/pdvs" element={<PDVAdmin />} />
           <Route path="/staff" element={<StaffAdmin />} />
           <Route path="/reports" element={<ReportsView />} />
+          <Route path="/settings" element={<Settings />} />
         </Route>
       </Routes>
     </BrowserRouter>
+    </ThemeProvider>
   );
 }
