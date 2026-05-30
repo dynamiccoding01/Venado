@@ -176,7 +176,15 @@ export function MonitoreoRastreoView() {
     }
   };
 
-  const filteredReponedores = reponedores.filter(r => 
+  // MOCK FOR TESTING: Force all reponedores to 'activo' and give them a fake GPS if they don't have one
+  const displayReponedores = reponedores.map((r, index) => ({
+    ...r,
+    estado: 'activo',
+    lat: r.lat || (-16.5000 + (index * 0.005)),
+    lon: r.lon || (-68.1500 + (index * 0.005))
+  }));
+
+  const filteredReponedores = displayReponedores.filter(r => 
     r.id?.toString().includes(searchQueryRep.toLowerCase()) ||
     r.estado?.toLowerCase().includes(searchQueryRep.toLowerCase())
   );
@@ -190,7 +198,7 @@ export function MonitoreoRastreoView() {
     switch (estado) {
       case 'activo': return 'bg-emerald-500 ring-emerald-500/30';
       case 'sin_señal': return 'bg-amber-500 ring-amber-500/30';
-      default: return 'bg-slate-500 ring-slate-500/30';
+      default: return 'bg-red-500 ring-red-500/30';
     }
   };
 
@@ -204,9 +212,10 @@ export function MonitoreoRastreoView() {
   };
 
   const createMarkerIcon = (estado) => {
-    let colorHex = '#64748b';
-    if (estado === 'activo') colorHex = '#10b981';
-    if (estado === 'sin_señal') colorHex = '#f59e0b';
+    let colorHex = '#ef4444'; // Red por defecto (desconectado)
+    if (estado === 'activo') colorHex = '#10b981'; // Green (activo)
+    if (estado === 'sin_señal') colorHex = '#f59e0b'; // Orange
+
     const html = `<div style="background-color: ${colorHex}; width: 36px; height: 36px; border-radius: 50%; border: 3px solid white; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.2); display: flex; align-items: center; justify-content: center;">
       <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 20px; height: 20px;">
         <rect x="1" y="3" width="15" height="13"></rect>
@@ -364,7 +373,7 @@ export function MonitoreoRastreoView() {
             <MapUpdater center={mapCenter} zoom={mapZoom} />
             
             {/* 1. LAYER: Reponedores en vivo */}
-            {reponedores
+            {displayReponedores
               .filter(r => r.lat && r.lon)
               .filter(r => {
                 // Si estamos en la pestaña de reponedores y hemos seleccionado a uno, 
