@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { MainLayout } from './components/layout/MainLayout';
 import { Dashboard } from './pages/Dashboard';
 import { RoutesView } from './pages/RoutesView';
@@ -12,6 +12,17 @@ import { Settings } from './pages/Settings';
 import { ThemeProvider } from './context/ThemeContext';
 
 export default function App() {
+  // Componente para proteger las rutas
+  const ProtectedRoute = ({ children }) => {
+    const user = localStorage.getItem('user');
+    const location = useLocation();
+
+    if (!user) {
+      return <Navigate to="/login" state={{ from: location }} replace />;
+    }
+
+    return children;
+  };
   return (
     <ThemeProvider>
       <BrowserRouter>
@@ -21,7 +32,7 @@ export default function App() {
         <Route path="/mobile" element={<MobileReponedor />} />
         
         {/* Rutas Privadas (Requieren Layout con Sidebar) */}
-        <Route element={<MainLayout />}>
+        <Route element={<ProtectedRoute><MainLayout /></ProtectedRoute>}>
           <Route path="/" element={<Dashboard />} />
           <Route path="/routes" element={<RoutesView />} />
           <Route path="/pdvs" element={<PDVAdmin />} />
