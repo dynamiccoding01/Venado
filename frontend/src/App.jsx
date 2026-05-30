@@ -7,6 +7,7 @@ import { PDVAdmin } from './pages/PDVAdmin';
 import { ReportsView } from './pages/ReportsView';
 import { Login } from './pages/Login';
 import { MobileReponedor } from './pages/MobileReponedor';
+import { StaffAdmin } from './pages/StaffAdmin';
 
 export default function App() {
   return (
@@ -21,7 +22,7 @@ export default function App() {
           <Route path="/" element={<Dashboard />} />
           <Route path="/routes" element={<RoutesView />} />
           <Route path="/pdvs" element={<PDVAdmin />} />
-          <Route path="/staff" element={<div className="p-4">Personal (Próximamente)</div>} />
+          <Route path="/staff" element={<StaffAdmin />} />
           <Route path="/reports" element={<ReportsView />} />
         </Route>
       </Routes>
