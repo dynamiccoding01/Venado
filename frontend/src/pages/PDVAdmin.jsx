@@ -254,27 +254,58 @@ export function PDVAdmin() {
             </table>
           </div>
         ) : (
-          <div className="flex-1 relative bg-slate-100 z-0">
-            <MapContainer center={[-16.5, -68.15]} zoom={12} className="w-full h-full">
-              <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" attribution='&copy; OpenStreetMap' />
-              {filteredPdvs.filter(p => p.latitud && p.longitud).map(pdv => (
-                <Marker 
-                  key={pdv.id_pdv} 
-                  position={[pdv.latitud, pdv.longitud]}
-                  icon={createColoredIcon(pdv.prioridad)}
-                >
-                  <Popup>
-                    <div className="p-1">
-                      <p className="font-bold text-sm">{pdv.nombre_pdv || pdv.codigo_gv}</p>
-                      <p className="text-xs text-slate-500">{pdv.direccion}</p>
-                      <span className="text-[10px] font-bold text-white bg-brand-blue px-1.5 py-0.5 rounded mt-1 inline-block uppercase">
-                        {pdv.prioridad}
-                      </span>
+          <div className="flex flex-1 min-h-0 relative z-0">
+            {/* Lista minimalista lateral */}
+            <div className="w-80 bg-white border-r border-brand-gray-border overflow-y-auto hidden md:block shadow-sm z-10">
+              <div className="p-4 border-b border-slate-100 bg-slate-50/80 sticky top-0 backdrop-blur-sm z-20">
+                <h3 className="text-sm font-bold text-slate-800">Puntos de Venta</h3>
+                <p className="text-xs text-slate-500 font-medium">{filteredPdvs.length} locales encontrados</p>
+              </div>
+              <div className="flex flex-col">
+                {filteredPdvs.map(pdv => (
+                  <div key={pdv.id_pdv} className="p-4 border-b border-slate-50 hover:bg-slate-50/80 cursor-pointer transition-all duration-200 group">
+                    <div className="flex justify-between items-start mb-1.5">
+                      <h4 className="text-sm font-bold text-slate-800 group-hover:text-brand-blue transition-colors leading-tight">
+                        {pdv.nombre_pdv || 'Sin Nombre'}
+                      </h4>
+                      <span className={clsx(
+                        "w-2.5 h-2.5 rounded-full shrink-0 shadow-sm mt-0.5", 
+                        pdv.prioridad === 'alta' ? "bg-brand-red" : 
+                        pdv.prioridad === 'media' ? "bg-brand-blue" : "bg-slate-400"
+                      )} />
                     </div>
-                  </Popup>
-                </Marker>
-              ))}
-            </MapContainer>
+                    <div className="flex items-center justify-between mt-2">
+                      <p className="text-[11px] text-slate-500 font-mono bg-slate-100 px-1.5 py-0.5 rounded">{pdv.codigo_gv}</p>
+                      <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">{categorias.find(c => c.id_categoria === pdv.id_categoria)?.nombre || 'N/A'}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+            
+            {/* Mapa Interactivo */}
+            <div className="flex-1 relative bg-slate-100 z-0">
+              <MapContainer center={[-16.5, -68.15]} zoom={12} className="w-full h-full">
+                <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" attribution='&copy; OpenStreetMap' />
+                {filteredPdvs.filter(p => p.latitud && p.longitud).map(pdv => (
+                  <Marker 
+                    key={pdv.id_pdv} 
+                    position={[pdv.latitud, pdv.longitud]}
+                    icon={createColoredIcon(pdv.prioridad)}
+                  >
+                    <Popup>
+                      <div className="p-1">
+                        <p className="font-bold text-sm">{pdv.nombre_pdv || pdv.codigo_gv}</p>
+                        <p className="text-xs text-slate-500">{pdv.direccion}</p>
+                        <span className="text-[10px] font-bold text-white bg-brand-blue px-1.5 py-0.5 rounded mt-1 inline-block uppercase">
+                          {pdv.prioridad}
+                        </span>
+                      </div>
+                    </Popup>
+                  </Marker>
+                ))}
+              </MapContainer>
+            </div>
           </div>
         )}
 
