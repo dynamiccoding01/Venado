@@ -61,10 +61,10 @@ export function MonitoreoRastreoView() {
       let initialReponedores = [];
       if (Array.isArray(usuarios)) {
         initialReponedores = usuarios
-          .filter(u => u.id_rol === 3 || u.rol === 3 || u.usuario?.id_rol === 3)
+          .filter(u => Number(u.id_rol) === 3 || Number(u.rol) === 3 || Number(u.usuario?.id_rol) === 3)
           .map(u => ({
             id: u.id_usuario || u.id,
-            nombre: u.nombre_completo || u.usuario?.nombre_completo || `Reponedor #${u.id_usuario || u.id}`,
+            nombre: u.nombre || u.usuario?.nombre || u.nombre_completo || u.usuario?.nombre_completo || `Reponedor #${u.id_usuario || u.id}`,
             lat: null, lon: null, estado: 'desconectado', ultimo_update: 'Nunca', pdv_actual: ''
           }));
       }
