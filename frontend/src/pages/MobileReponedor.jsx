@@ -1,41 +1,79 @@
-import React, { useState } from 'react';
-import { MapPin, Navigation, Camera, CheckCircle, Clock, ChevronLeft, Package, User } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { MapPin, Navigation, Camera, CheckCircle, Clock, ChevronLeft, Package, User, CloudRain } from 'lucide-react';
 import clsx from 'clsx';
-
-// --- MOCK DATA PARA LA VISTA MÓVIL ---
-const initialRouteTasks = [
-  { id: 'GV-042', name: 'Supermercado Ketal', address: 'Av. Arce #1020', status: 'completed', time: '08:30' },
-  { id: 'GV-089', name: 'Micromercado San Jorge', address: 'Plaza Isabel la Católica', status: 'current', time: '10:15' },
-  { id: 'GV-102', name: 'Tienda Doña Lucha', address: 'Sopocachi', status: 'pending', time: '11:00' },
-  { id: 'GV-005', name: 'Hipermaxi Los Pinos', address: 'Zona Sur', status: 'pending', time: '14:00' },
-];
+import { API, createWebSocket } from '../api/client';
 
 export function MobileReponedor() {
-  const [routeTasks, setRouteTasks] = useState(initialRouteTasks);
+  const [routeTasks, setRouteTasks] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [isCheckedIn, setIsCheckedIn] = useState(false);
   const [currentTask, setCurrentTask] = useState('inventory'); // inventory, photos, signature
+  const [clima, setClima] = useState(null);
 
-  // Computed: current active PDV
-  const activePdv = routeTasks.find(t => t.status === 'current') || routeTasks.find(t => t.status === 'pending');
-  const progressPct = Math.round((routeTasks.filter(t => t.status === 'completed').length / routeTasks.length) * 100);
+  // Encontrar el actual o próximo pendiente
+  const activePdvIndex = routeTasks.findIndex(t => t.estado === 'pendiente' || t.estado === 'en_progreso');
+  const activePdv = activePdvIndex !== -1 ? routeTasks[activePdvIndex] : null;
+  const completedCount = routeTasks.filter(t => t.estado === 'completada').length;
+  const progressPct = routeTasks.length > 0 ? Math.round((completedCount / routeTasks.length) * 100) : 0;
 
-  const handleFinishVisit = () => {
+  useEffect(() => {
+    // 1. Fetch Ruta 1 (Hardcodeada para la simulación)
+    API.getRutaConPuntos(1).then(data => {
+      if (data && data.ruta_puntos) {
+        // Ordenamos por 'orden' de la API
+        const sorted = data.ruta_puntos.sort((a, b) => a.orden - b.orden);
+        setRouteTasks(sorted);
+      }
+      setLoading(false);
+    }).catch(e => {
+      console.error("No se pudo cargar la ruta:", e);
+      setLoading(false);
+    });
+
+    // 2. Fetch Clima (La Paz)
+    API.getClima(-16.5, -68.15).then(setClima).catch(console.error);
+  }, []);
+
+  useEffect(() => {
+    // 3. Conectar WebSocket del Reponedor ID = 5
+    const ws = createWebSocket('/ws/reponedor/5');
+    
+    ws.onopen = () => console.log("Móvil WS Conectado");
+
+    const interval = setInterval(() => {
+      if (ws.readyState === WebSocket.OPEN) {
+        // Simulamos caminar enviando coordenadas ligeramente variables
+        ws.send(JSON.stringify({
+          lat: -16.500 + (Math.random() * 0.005),
+          lon: -68.150 + (Math.random() * 0.005),
+          timestamp: new Date().toISOString(),
+          pdv_actual: activePdv ? activePdv.pdv.codigo_gv : ""
+        }));
+      }
+    }, 5000); // Enviar cada 5 segundos para que el dashboard lo vea en vivo
+
+    return () => {
+      clearInterval(interval);
+      ws.close();
+    };
+  }, [activePdv]);
+
+  const handleFinishVisit = async () => {
+    if (!activePdv) return;
+    
     setIsCheckedIn(false);
     setCurrentTask('inventory');
     
-    // Marcar el actual como completado y el siguiente como 'current'
-    let foundCurrent = false;
-    const newTasks = routeTasks.map(t => {
-      if (t.status === 'current') {
-        foundCurrent = true;
-        return { ...t, status: 'completed' };
-      }
-      if (t.status === 'pending' && foundCurrent) {
-        foundCurrent = false; // Solo el primero que sigue
-        return { ...t, status: 'current' };
-      }
-      return t;
-    });
+    try {
+      // Registramos 20 mins reales en la API
+      await API.registrarTiempo(activePdv.id_ruta_punto, 20);
+    } catch(e) {
+      console.error("Error reportando visita (mock fallido):", e);
+    }
+    
+    // Actualizamos estado local
+    const newTasks = [...routeTasks];
+    newTasks[activePdvIndex] = { ...newTasks[activePdvIndex], estado: 'completada' };
     setRouteTasks(newTasks);
   };
 
@@ -52,7 +90,7 @@ export function MobileReponedor() {
 
         {/* Status Bar (Simulated) */}
         <div className="h-10 bg-brand-blue w-full shrink-0 flex justify-between items-end px-6 pb-1 text-white text-xs font-medium">
-          <span>09:41</span>
+          <span>{new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
           <div className="flex gap-1 items-center">
             <span className="w-3 h-3 rounded-full bg-white animate-pulse"></span>
             <span>LTE</span>
@@ -67,21 +105,23 @@ export function MobileReponedor() {
                  <User size={16} />
                </div>
                <div>
-                 <p className="text-[10px] font-medium text-blue-200 uppercase tracking-wider">Reponedor</p>
+                 <p className="text-[10px] font-medium text-blue-200 uppercase tracking-wider">Reponedor 5</p>
                  <p className="font-bold text-sm">Carlos Méndez</p>
                </div>
             </div>
-            <button className="p-2 bg-white/10 rounded-full">
-              <Navigation size={18} />
-            </button>
+            {clima && (
+              <div className="flex items-center gap-1 text-xs font-semibold bg-white/10 px-2 py-1 rounded-full">
+                <CloudRain size={14} /> {clima.temperatura}°C
+              </div>
+            )}
           </div>
           
           <div className="bg-white/10 rounded-xl p-4 border border-white/20 backdrop-blur-sm">
-            <p className="text-xs text-blue-200 uppercase tracking-widest font-semibold mb-1">Ruta del Día</p>
-            <h2 className="text-xl font-bold">Zona Sur (La Paz)</h2>
+            <p className="text-xs text-blue-200 uppercase tracking-widest font-semibold mb-1">Ruta #1 (Optimizada)</p>
+            <h2 className="text-xl font-bold">Zona Central</h2>
             <div className="flex justify-between mt-3 text-sm font-medium">
               <span>Progreso: {progressPct}%</span>
-              <span>{routeTasks.filter(t => t.status === 'completed').length} / {routeTasks.length} PDVs</span>
+              <span>{completedCount} / {routeTasks.length} PDVs</span>
             </div>
             {/* Progress Bar */}
             <div className="mt-2 h-1.5 w-full bg-black/20 rounded-full overflow-hidden">
@@ -95,19 +135,26 @@ export function MobileReponedor() {
           
           {/* Botón Principal (Check-In) */}
           <div className="p-6">
-            {!isCheckedIn ? (
+            {!activePdv ? (
+               <div className="bg-emerald-500 text-white p-5 rounded-2xl shadow-sm text-center">
+                 <CheckCircle size={32} className="mx-auto mb-2" />
+                 <h3 className="font-bold text-lg">Ruta Completada</h3>
+                 <p className="text-sm opacity-90">Buen trabajo, has visitado todos los PDVs.</p>
+               </div>
+            ) : !isCheckedIn ? (
               <button 
                 onClick={() => setIsCheckedIn(true)}
                 className="w-full bg-brand-blue text-white py-4 rounded-2xl shadow-lg font-bold text-lg flex items-center justify-center gap-2 transform active:scale-95 transition-transform"
               >
                 <MapPin size={24} />
-                Hacer Check-In (PDV Actual)
+                Hacer Check-In (PDV {activePdv.orden})
               </button>
             ) : (
               <div className="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 relative overflow-hidden">
                 <div className="absolute top-0 left-0 w-1 h-full bg-yellow-400"></div>
                 <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider">En Ubicación</h3>
-                <h4 className="text-lg font-bold text-slate-800 mt-1">{activePdv ? activePdv.name : 'Ruta Completada'}</h4>
+                <h4 className="text-lg font-bold text-slate-800 mt-1">{activePdv.pdv.nombre_pdv}</h4>
+                <p className="text-xs text-slate-500 font-mono mt-1">{activePdv.pdv.codigo_gv}</p>
                 
                 {/* Tareas Activas */}
                 <div className="mt-4 flex flex-col gap-3">
@@ -160,47 +207,54 @@ export function MobileReponedor() {
           <div className="px-6 pb-6">
             <h3 className="text-sm font-bold text-slate-800 mb-4 flex justify-between items-center">
               <span>Secuencia de Visitas</span>
-              <span className="text-xs font-medium text-brand-blue">Ver Mapa</span>
+              <span className="text-xs font-medium text-brand-blue">Lista API</span>
             </h3>
             
             <div className="relative border-l-2 border-slate-200 ml-4 space-y-6">
-              {routeTasks.map((task, i) => (
-                <div key={i} className="relative pl-6">
-                  {/* Timeline Dot */}
-                  <div className={clsx(
-                    "absolute -left-[11px] top-1 w-5 h-5 rounded-full ring-4 ring-slate-50 flex items-center justify-center",
-                    task.status === 'completed' ? "bg-brand-blue" :
-                    task.status === 'current' ? "bg-yellow-400" :
-                    "bg-slate-300"
-                  )}>
-                    {task.status === 'completed' && <CheckCircle size={10} className="text-white" />}
-                    {task.status === 'current' && <div className="w-2 h-2 rounded-full bg-white"></div>}
-                  </div>
-                  
-                  {/* Task Card */}
-                  <div className={clsx(
-                    "p-3 rounded-xl border",
-                    task.status === 'current' ? "bg-white border-yellow-200 shadow-sm" : "bg-transparent border-transparent"
-                  )}>
-                    <div className="flex justify-between items-start mb-1">
-                      <span className="text-[10px] font-bold text-slate-400 font-mono">{task.id}</span>
-                      <span className="text-[10px] font-bold text-slate-500 flex items-center gap-1"><Clock size={10}/> {task.time}</span>
+              {loading ? (
+                <p className="text-xs text-slate-500 pl-4">Cargando...</p>
+              ) : routeTasks.map((task, i) => {
+                const isCompleted = task.estado === 'completada';
+                const isCurrent = task.id_ruta_punto === activePdv?.id_ruta_punto;
+
+                return (
+                  <div key={task.id_ruta_punto} className="relative pl-6">
+                    {/* Timeline Dot */}
+                    <div className={clsx(
+                      "absolute -left-[11px] top-1 w-5 h-5 rounded-full ring-4 ring-slate-50 flex items-center justify-center",
+                      isCompleted ? "bg-brand-blue" :
+                      isCurrent ? "bg-yellow-400" :
+                      "bg-slate-300"
+                    )}>
+                      {isCompleted && <CheckCircle size={10} className="text-white" />}
+                      {isCurrent && <div className="w-2 h-2 rounded-full bg-white"></div>}
                     </div>
-                    <h4 className={clsx(
-                      "font-bold text-sm",
-                      task.status === 'completed' ? "text-slate-500 line-through" : "text-slate-800"
-                    )}>{task.name}</h4>
-                    <p className="text-xs text-slate-500 mt-0.5">{task.address}</p>
+                    
+                    {/* Task Card */}
+                    <div className={clsx(
+                      "p-3 rounded-xl border",
+                      isCurrent ? "bg-white border-yellow-200 shadow-sm" : "bg-transparent border-transparent"
+                    )}>
+                      <div className="flex justify-between items-start mb-1">
+                        <span className="text-[10px] font-bold text-slate-400 font-mono">{task.pdv.codigo_gv}</span>
+                        <span className="text-[10px] font-bold text-slate-500 flex items-center gap-1">Orden {task.orden}</span>
+                      </div>
+                      <h4 className={clsx(
+                        "font-bold text-sm",
+                        isCompleted ? "text-slate-500 line-through" : "text-slate-800"
+                      )}>{task.pdv.nombre_pdv}</h4>
+                      <p className="text-xs text-slate-500 mt-0.5">Lat: {task.pdv.latitud.toFixed(3)}</p>
+                    </div>
                   </div>
-                </div>
-              ))}
+                )
+              })}
             </div>
           </div>
         </div>
 
       </div>
       
-      {/* Botón flotante para salir del simulador (fuera del teléfono) */}
+      {/* Botón flotante para salir del simulador */}
       <a href="/" className="fixed top-8 right-8 bg-white px-4 py-2 rounded-lg shadow font-bold text-slate-800 flex items-center gap-2 hover:bg-slate-50">
         <ChevronLeft size={20} /> Volver al Desktop
       </a>

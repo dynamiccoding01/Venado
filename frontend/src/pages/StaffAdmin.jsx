@@ -1,21 +1,43 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Search, Plus, Filter, MoreVertical, BatteryFull, BatteryMedium, BatteryLow, Smartphone, Car, Bike, PersonStanding } from 'lucide-react';
 import clsx from 'clsx';
-
-// --- MOCK DATA PARA STAFF ---
-const initialStaff = [
-  { id: 'USR-001', name: 'Carlos Méndez', role: 'Reponedor', region: 'Metropolitana', status: 'Online', battery: 85, vehicle: 'auto', lastSeen: 'Justo ahora' },
-  { id: 'USR-002', name: 'Ana López', role: 'Reponedor', region: 'Norte Coast', status: 'Online', battery: 42, vehicle: 'moto', lastSeen: 'Hace 5 min' },
-  { id: 'USR-003', name: 'Ricardo Kim', role: 'Supervisor', region: 'Norte Coast', status: 'Offline', battery: null, vehicle: null, lastSeen: 'Hace 2 horas' },
-  { id: 'USR-004', name: 'Sofia Martinez', role: 'Reponedor', region: 'Metropolitana', status: 'Break', battery: 15, vehicle: 'pie', lastSeen: 'Hace 15 min' },
-  { id: 'USR-005', name: 'Julian Delgado', role: 'Reponedor', region: 'Sur Sierra', status: 'Online', battery: 92, vehicle: 'bici', lastSeen: 'Justo ahora' },
-];
+import { createWebSocket } from '../api/client';
 
 export function StaffAdmin() {
   const [searchQuery, setSearchQuery] = useState('');
   const [roleFilter, setRoleFilter] = useState('Todos');
+  const [staffList, setStaffList] = useState([]);
 
-  const filteredStaff = initialStaff.filter(staff => {
+  useEffect(() => {
+    const ws = createWebSocket('/ws/supervisor/2');
+    
+    ws.onopen = () => console.log('StaffAdmin WS Connected');
+    
+    ws.onmessage = (event) => {
+      const data = JSON.parse(event.data);
+      if (data.reponedores) {
+        const mappedStaff = data.reponedores.map(rep => ({
+          id: `USR-00${rep.id}`,
+          name: `Reponedor ${rep.id}`,
+          role: 'Reponedor',
+          region: rep.pdv_actual ? `PDV: ${rep.pdv_actual}` : 'En Tránsito',
+          status: rep.estado === 'activo' ? 'Online' : rep.estado === 'sin_señal' ? 'Break' : 'Offline',
+          battery: rep.estado === 'activo' ? Math.floor(Math.random() * 40) + 60 : null, // Simulated battery
+          vehicle: 'pie', 
+          lastSeen: rep.ultimo_update || 'Desconocido'
+        }));
+        
+        // Always include a supervisor for variety
+        const supervisor = { id: 'SUP-001', name: 'Carlos Admin', role: 'Supervisor', region: 'Oficina Central', status: 'Online', battery: 100, vehicle: 'auto', lastSeen: 'Justo ahora' };
+
+        setStaffList([supervisor, ...mappedStaff]);
+      }
+    };
+    
+    return () => ws.close();
+  }, []);
+
+  const filteredStaff = staffList.filter(staff => {
     const matchesSearch = staff.name.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesRole = roleFilter === 'Todos' || staff.role === roleFilter;
     return matchesSearch && matchesRole;
@@ -57,7 +79,7 @@ export function StaffAdmin() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="bg-white p-5 rounded-xl border border-brand-gray-border shadow-sm flex items-center gap-4">
           <div className="w-12 h-12 rounded-full bg-blue-50 flex items-center justify-center text-brand-blue font-bold text-xl">
-            {initialStaff.filter(s => s.status === 'Online').length}
+            {staffList.filter(s => s.status === 'Online').length}
           </div>
           <div>
             <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Activos en Campo</p>
@@ -66,7 +88,7 @@ export function StaffAdmin() {
         </div>
         <div className="bg-white p-5 rounded-xl border border-brand-gray-border shadow-sm flex items-center gap-4">
           <div className="w-12 h-12 rounded-full bg-red-50 flex items-center justify-center text-brand-red font-bold text-xl">
-            {initialStaff.filter(s => s.battery !== null && s.battery < 20).length}
+            {staffList.filter(s => s.battery !== null && s.battery < 20).length}
           </div>
           <div>
             <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Batería Crítica</p>
@@ -75,7 +97,7 @@ export function StaffAdmin() {
         </div>
         <div className="bg-white p-5 rounded-xl border border-brand-gray-border shadow-sm flex items-center gap-4">
           <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center text-slate-600 font-bold text-xl">
-            {initialStaff.length}
+            {staffList.length}
           </div>
           <div>
             <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Total Personal</p>
