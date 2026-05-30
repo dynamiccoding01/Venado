@@ -11,6 +11,8 @@ import { StaffAdmin } from './pages/StaffAdmin';
 import { Settings } from './pages/Settings';
 import { MercadosAdmin } from './pages/MercadosAdmin';
 import { CategoriasAdmin } from './pages/CategoriasAdmin';
+import { CatalogsView } from './pages/CatalogsView';
+import { ReponedoresView } from './pages/ReponedoresView';
 import { ThemeProvider } from './context/ThemeContext';
 
 export default function App() {
@@ -57,6 +59,8 @@ export default function App() {
           <Route path="/" element={<Dashboard />} />
           <Route path="/routes" element={<RoutesView />} />
           <Route path="/pdvs" element={<PDVAdmin />} />
+          <Route path="/catalogs" element={<CatalogsView />} />
+          <Route path="/reponedores" element={<ReponedoresView />} />
           <Route path="/reports" element={<ReportsView />} />
           
           {/* Rutas exclusivas para Administradores (id_rol = 1) */}
