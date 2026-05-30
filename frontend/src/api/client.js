@@ -70,6 +70,7 @@ export const API = {
   // Dashboard
   getMetrics: () => apiFetch('/dashboard/metrics'),
   getMetricasPorFecha: (fecha) => apiFetch(`/dashboard/metricas/${fecha}`),
+  getKpis: (fecha) => apiFetch(`/kpis/?fecha=${fecha}`),
   
   // Clima
   getClima: (lat, lon) => apiFetch(`/clima/${lat}/${lon}`),
