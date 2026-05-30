@@ -9,7 +9,8 @@ const navItems = [
   { id: 'routes', icon: Route, label: 'Gestión de Rutas', path: '/routes' },
   { id: 'inventory', icon: Package, label: 'PDVs', path: '/pdvs' },
   { id: 'staff', icon: Users, label: 'Personal', path: '/staff' },
-  { id: 'catalogs', icon: Settings, label: 'Catálogos', path: '/catalogs' },
+  { id: 'mercados', icon: Settings, label: 'Mercados', path: '/mercados' },
+  { id: 'categorias', icon: Package, label: 'Categorías', path: '/categorias' },
   { id: 'reporting', icon: BarChart3, label: 'Reportes KPIs', path: '/reports' },
 ];
 
@@ -24,8 +25,8 @@ export function Sidebar() {
   // Filtrar ítems de navegación por rol
   const visibleNavItems = navItems.filter(item => {
     // Si es admin (1), ve todo.
-    // Si es supervisor (2), no ve staff ni catalogs.
-    if (userRole === 2 && (item.id === 'staff' || item.id === 'catalogs')) return false;
+    // Si es supervisor (2), no ve staff ni mercados ni categorias.
+    if (userRole === 2 && (item.id === 'staff' || item.id === 'mercados' || item.id === 'categorias')) return false;
     return true;
   });
 

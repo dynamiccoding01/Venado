@@ -9,7 +9,8 @@ import { Login } from './pages/Login';
 import { MobileReponedor } from './pages/MobileReponedor';
 import { StaffAdmin } from './pages/StaffAdmin';
 import { Settings } from './pages/Settings';
-import { CatalogsView } from './pages/CatalogsView';
+import { MercadosAdmin } from './pages/MercadosAdmin';
+import { CategoriasAdmin } from './pages/CategoriasAdmin';
 import { ThemeProvider } from './context/ThemeContext';
 
 export default function App() {
@@ -64,9 +65,14 @@ export default function App() {
               <StaffAdmin />
             </RoleRoute>
           } />
-          <Route path="/catalogs" element={
+          <Route path="/mercados" element={
             <RoleRoute allowedRoles={[1]}>
-              <CatalogsView />
+              <MercadosAdmin />
+            </RoleRoute>
+          } />
+          <Route path="/categorias" element={
+            <RoleRoute allowedRoles={[1]}>
+              <CategoriasAdmin />
             </RoleRoute>
           } />
           <Route path="/settings" element={
