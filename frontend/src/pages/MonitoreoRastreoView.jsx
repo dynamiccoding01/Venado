@@ -103,7 +103,16 @@ export function MonitoreoRastreoView() {
     ws.onmessage = (event) => {
       try {
         const data = JSON.parse(event.data);
-        if (data.reponedores && Array.isArray(data.reponedores)) setReponedores(data.reponedores);
+        if (data.reponedores && Array.isArray(data.reponedores)) {
+          setReponedores(prev => {
+            const incomingMap = new Map(data.reponedores.map(r => [r.id || r.id_reponedor, r]));
+            const updated = prev.map(p => incomingMap.has(p.id) ? { ...p, ...incomingMap.get(p.id) } : p);
+            incomingMap.forEach((val, id) => {
+              if (!updated.find(u => u.id === id)) updated.push(val);
+            });
+            return updated;
+          });
+        }
       } catch (e) { }
     };
     ws.onclose = () => setWsStatus('desconectado');
@@ -305,7 +314,7 @@ export function MonitoreoRastreoView() {
                       <div className="flex justify-between items-start mb-2">
                         <div className="flex items-center gap-2">
                           <Users className={isSelected ? "text-brand-blue" : "text-slate-400"} size={14} />
-                          <h4 className="font-bold text-sm text-slate-800 dark:text-slate-100">{rep.nombre}</h4>
+                          <h4 className="font-bold text-sm text-slate-800 dark:text-slate-100">{rep.nombre || `Reponedor #${rep.id_reponedor || rep.id}`}</h4>
                         </div>
                         <div className="flex items-center gap-1.5">
                           <span className={clsx("w-2 h-2 rounded-full ring-2", getStatusColor(rep.estado))}></span>
@@ -387,7 +396,7 @@ export function MonitoreoRastreoView() {
               <Marker key={`rep-${rep.id}`} position={[rep.lat, rep.lon]} icon={createMarkerIcon(rep.estado)}>
                 <Popup>
                   <div className="font-sans text-xs">
-                    <p className="font-bold text-sm text-slate-800">{rep.nombre}</p>
+                    <p className="font-bold text-sm text-slate-800">{rep.nombre || `Reponedor #${rep.id_reponedor || rep.id}`}</p>
                     <p className="text-slate-500 mt-1">Estado: {getStatusText(rep.estado)}</p>
                   </div>
                 </Popup>
