@@ -50,14 +50,8 @@ export function Sidebar() {
         ))}
       </nav>
 
-      {/* Bottom Actions */}
+      {/* Bottom Actions (Empty for now) */}
       <div className="mt-auto w-full px-2 flex flex-col gap-2">
-        <Link to="/settings" className="w-full aspect-square rounded-xl flex items-center justify-center text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700 hover:text-slate-600 dark:hover:text-slate-200 transition-colors group relative">
-          <Settings size={22} />
-          <div className="absolute left-14 bg-slate-800 text-white text-xs px-2 py-1 rounded opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all whitespace-nowrap z-50 pointer-events-none">
-            Ajustes
-          </div>
-        </Link>
       </div>
     </aside>
   );
