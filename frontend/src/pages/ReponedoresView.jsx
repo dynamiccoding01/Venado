@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup, useMap, Polyline, CircleMarker } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { Users, Navigation, Radio, MapPin, Search } from 'lucide-react';
@@ -22,6 +22,10 @@ export function ReponedoresView() {
   const [selectedId, setSelectedId] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [wsStatus, setWsStatus] = useState('conectando'); // conectando, conectado, desconectado
+  
+  // Historial de la ruta
+  const [historialRuta, setHistorialRuta] = useState([]);
+  const [fechaFiltro, setFechaFiltro] = useState(new Date().toISOString().split('T')[0]);
 
   useEffect(() => {
     // 1. Carga inicial vía HTTP: Traemos TODOS los usuarios (reponedores) y el último GPS
@@ -124,6 +128,26 @@ export function ReponedoresView() {
       }
     };
   }, []);
+
+  // Efecto para cargar el historial cuando se selecciona un reponedor o cambia la fecha
+  useEffect(() => {
+    if (selectedId) {
+      API.getHistorialGps(selectedId, fechaFiltro)
+        .then(data => {
+          if (Array.isArray(data)) {
+            setHistorialRuta(data);
+          } else {
+            setHistorialRuta([]);
+          }
+        })
+        .catch(e => {
+          console.error("Error al obtener historial", e);
+          setHistorialRuta([]);
+        });
+    } else {
+      setHistorialRuta([]);
+    }
+  }, [selectedId, fechaFiltro]);
 
   const filteredReponedores = reponedores.filter(r => 
     r.id?.toString().includes(searchQuery.toLowerCase()) ||
@@ -230,6 +254,36 @@ export function ReponedoresView() {
                 </Popup>
               </Marker>
             ))}
+
+            {/* Historial (Ruta / Miguitas de pan) */}
+            {historialRuta.length > 0 && (
+              <>
+                <Polyline 
+                  positions={historialRuta.filter(p => p.latitud && p.longitud).map(p => [p.latitud, p.longitud])} 
+                  color="#3b82f6" 
+                  weight={3} 
+                  opacity={0.8} 
+                  dashArray="10, 10"
+                />
+                {historialRuta.filter(p => p.latitud && p.longitud).map((punto, idx) => (
+                  <CircleMarker 
+                    key={`hist-${idx}`}
+                    center={[punto.latitud, punto.longitud]}
+                    radius={5}
+                    pathOptions={{ color: '#2563eb', fillColor: 'white', fillOpacity: 1, weight: 2 }}
+                  >
+                    <Popup>
+                      <div className="font-sans text-xs">
+                        <p className="font-bold text-slate-800 mb-1">Punto Histórico</p>
+                        <p>Hora: {new Date(punto.timestamp).toLocaleTimeString()}</p>
+                        {punto.velocidad_kmh !== null && <p>Velocidad: {punto.velocidad_kmh} km/h</p>}
+                        {punto.nivel_bateria !== null && <p>Batería: {punto.nivel_bateria}%</p>}
+                      </div>
+                    </Popup>
+                  </CircleMarker>
+                ))}
+              </>
+            )}
           </MapContainer>
         </div>
 
@@ -244,6 +298,19 @@ export function ReponedoresView() {
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Buscar por ID..." 
                 className="w-full pl-9 pr-3 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 rounded-lg text-sm focus:ring-1 focus:ring-brand-blue outline-none transition-colors" 
+              />
+            </div>
+            
+            {/* Selector de fecha para el historial */}
+            <div className="mt-3">
+              <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">
+                Fecha del Historial GPS
+              </label>
+              <input 
+                type="date" 
+                value={fechaFiltro}
+                onChange={(e) => setFechaFiltro(e.target.value)}
+                className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 rounded-lg text-sm focus:ring-1 focus:ring-brand-blue outline-none transition-colors" 
               />
             </div>
           </div>
@@ -293,6 +360,16 @@ export function ReponedoresView() {
                         <div className="mt-2 text-[10px] opacity-70">
                           Actualizado: {rep.ultimo_update && rep.ultimo_update !== "Nunca" ? new Date(rep.ultimo_update).toLocaleTimeString() : 'Nunca'}
                         </div>
+                        {isSelected && historialRuta.length > 0 && (
+                          <div className="mt-2 text-[10px] font-semibold text-brand-blue bg-blue-50 dark:bg-brand-blue/20 px-2 py-1 rounded w-max transition-all">
+                            Ruta cargada: {historialRuta.length} puntos detectados
+                          </div>
+                        )}
+                        {isSelected && historialRuta.length === 0 && (
+                          <div className="mt-2 text-[10px] text-slate-400 bg-slate-50 dark:bg-slate-800/50 px-2 py-1 rounded w-max transition-all">
+                            Sin historial para esta fecha
+                          </div>
+                        )}
                       </div>
                     </div>
                   );

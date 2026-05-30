@@ -119,6 +119,13 @@ export const API = {
   getPosicionesGps: async () => {
     return apiFetch('/gps/');
   },
+  getHistorialGps: async (id_usuario, fecha) => {
+    let url = `/usuarios/${id_usuario}/gps`;
+    if (fecha) {
+      url += `?fecha=${fecha}`;
+    }
+    return apiFetch(url);
+  },
 
   // Categorías
   getCategorias: async () => {
