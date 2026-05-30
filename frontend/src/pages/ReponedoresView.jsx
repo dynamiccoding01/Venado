@@ -4,6 +4,7 @@ import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { Users, Navigation, Radio, MapPin, Search } from 'lucide-react';
 import clsx from 'clsx';
+import { API } from '../api/client';
 
 // Componente para actualizar el centro del mapa
 function MapUpdater({ center, zoom }) {
