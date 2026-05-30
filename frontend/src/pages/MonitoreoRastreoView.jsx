@@ -72,9 +72,10 @@ export function MonitoreoRastreoView() {
         const gpsMap = new Map();
         gpsData.forEach(pos => {
           const id = pos.id_reponedor || pos.id;
+          const ultimo_update = pos.timestamp || pos.creado_en || new Date().toISOString();
           gpsMap.set(id, {
-            lat: pos.latitud || pos.lat, lon: pos.longitud || pos.lon, estado: 'activo',
-            ultimo_update: pos.timestamp || pos.creado_en || new Date().toISOString(), pdv_actual: pos.pdv_actual || ''
+            lat: pos.latitud || pos.lat, lon: pos.longitud || pos.lon,
+            ultimo_update, pdv_actual: pos.pdv_actual || ''
           });
         });
         initialReponedores = initialReponedores.map(rep => gpsMap.has(rep.id) ? { ...rep, ...gpsMap.get(rep.id) } : rep);
@@ -109,7 +110,8 @@ export function MonitoreoRastreoView() {
         const data = JSON.parse(event.data);
         if (data.reponedores && Array.isArray(data.reponedores)) {
           setReponedores(prev => {
-            const incomingMap = new Map(data.reponedores.map(r => [r.id || r.id_reponedor, r]));
+            const now = new Date().toISOString();
+            const incomingMap = new Map(data.reponedores.map(r => [r.id || r.id_reponedor, { ...r, ultimo_update: r.ultimo_update || now }]));
             const updated = prev.map(p => incomingMap.has(p.id) ? { ...p, ...incomingMap.get(p.id) } : p);
             incomingMap.forEach((val, id) => {
               if (!updated.find(u => u.id === id)) updated.push(val);
@@ -189,12 +191,18 @@ export function MonitoreoRastreoView() {
     }
   };
 
-  // MOCK FOR TESTING: Force all reponedores to 'activo' and give them a fake GPS if they don't have one
-  const displayReponedores = reponedores.map((r, index) => ({
+  const calcularEstado = (ultimoUpdate) => {
+    if (!ultimoUpdate || ultimoUpdate === 'Nunca') return 'desconectado';
+    const lastTime = new Date(ultimoUpdate).getTime();
+    if (isNaN(lastTime)) return 'desconectado';
+    const now = new Date().getTime();
+    const diffMinutes = (now - lastTime) / (1000 * 60);
+    return diffMinutes <= 2 ? 'activo' : 'desconectado';
+  };
+
+  const displayReponedores = reponedores.map((r) => ({
     ...r,
-    estado: 'activo',
-    lat: r.lat || (-16.5000 + (index * 0.005)),
-    lon: r.lon || (-68.1500 + (index * 0.005))
+    estado: calcularEstado(r.ultimo_update)
   }));
 
   const filteredReponedores = displayReponedores.filter(r => 
