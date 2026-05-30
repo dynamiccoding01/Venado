@@ -84,5 +84,11 @@ export const API = {
       method: 'POST',
       body: JSON.stringify({ email, password })
     });
+  },
+  logoutUsuario: async (token) => {
+    return apiFetch('/logout', {
+      method: 'POST',
+      body: JSON.stringify({ token })
+    });
   }
 };

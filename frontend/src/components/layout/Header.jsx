@@ -1,13 +1,32 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Search, Bell, User, Settings, Moon, Sun, LogOut } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import clsx from 'clsx';
 import { useTheme } from '../../context/ThemeContext';
+import { API } from '../../api/client';
 
 export function Header() {
   const { isDarkMode, toggleDarkMode } = useTheme();
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const dropdownRef = useRef(null);
+  const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    try {
+      const userStr = localStorage.getItem('user');
+      if (userStr) {
+        const userData = JSON.parse(userStr);
+        if (userData.token) {
+          await API.logoutUsuario(userData.token);
+        }
+      }
+    } catch (error) {
+      console.error('Error on logout:', error);
+    } finally {
+      localStorage.removeItem('user');
+      navigate('/login');
+    }
+  };
 
   useEffect(() => {
     function handleClickOutside(event) {
@@ -86,7 +105,7 @@ export function Header() {
                 </button>
                 <div className="h-px bg-slate-100 dark:bg-dark-border my-1 mx-3"></div>
                 <button 
-                  onClick={() => setIsProfileOpen(false)}
+                  onClick={handleLogout}
                   className="flex items-center gap-3 px-4 py-3 text-sm font-medium text-brand-red hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl transition-colors w-full text-left"
                 >
                   <LogOut size={18} /> Cerrar Sesión
