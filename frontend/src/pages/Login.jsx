@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import './LoginScreen.css';
 import logo from '../assets/logo.jpg';
+import { API } from '../api/client';
 
 export function Login() {
   const [showPassword, setShowPassword] = useState(false);
@@ -43,15 +44,19 @@ export function Login() {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (validateForm()) {
       setIsSubmitted(true);
-      setTimeout(() => {
-        setIsSubmitted(false);
+      try {
+        const user = await API.loginUsuario(formData.email, formData.password);
+        localStorage.setItem('user', JSON.stringify(user));
         // alert('¡Inicio de sesión exitoso!');
         window.location.href = '/'; // Redirigir al inicio después del login exitoso
-      }, 1500);
+      } catch (error) {
+        setErrors(prev => ({ ...prev, email: error.message, password: ' ' }));
+        setIsSubmitted(false);
+      }
     }
   };
 

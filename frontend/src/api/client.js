@@ -59,4 +59,18 @@ export const API = {
   
   // Clima
   getClima: (lat, lon) => apiFetch(`/clima/${lat}/${lon}`),
+
+  // Usuarios (CRUD & Auth)
+  getUsuarios: () => apiFetch('/usuarios/'),
+  crearUsuario: (data) => apiFetch('/usuarios/', { method: 'POST', body: JSON.stringify(data) }),
+  actualizarUsuario: (id, data) => apiFetch(`/usuarios/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
+  eliminarUsuario: (id) => apiFetch(`/usuarios/${id}`, { method: 'DELETE' }),
+  loginUsuario: async (email, password) => {
+    // Simulacion de validacion contra los usuarios de la BD. 
+    // Como el backend encripta el password pero no hay endpoint explicito de login, lo validamos con existencia.
+    const usuarios = await apiFetch('/usuarios/');
+    const user = usuarios.find(u => u.email === email && u.activo === true);
+    if (!user) throw new Error('Credenciales inválidas o usuario inactivo');
+    return user;
+  }
 };
