@@ -147,20 +147,20 @@ export function PDVAdmin() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4">
         <div>
-          <h2 className="text-2xl font-bold text-slate-800 tracking-tight">Administración de Puntos de Venta (PDV)</h2>
-          <p className="text-sm text-slate-500 mt-1">Gestiona y asigna la red de distribución regional.</p>
+          <h2 className="text-2xl font-bold text-slate-800 dark:text-white tracking-tight transition-colors">Administración de Puntos de Venta (PDV)</h2>
+          <p className="text-sm text-slate-500 dark:text-slate-400 mt-1 transition-colors">Gestiona y asigna la red de distribución regional.</p>
         </div>
         <div className="flex gap-3">
-          <div className="bg-white rounded-lg p-1 border border-slate-200 flex shadow-sm">
+          <div className="bg-white dark:bg-dark-card rounded-lg p-1 border border-slate-200 dark:border-slate-700 flex shadow-sm transition-colors">
             <button 
               onClick={() => setViewMode('list')}
-              className={clsx("px-3 py-1.5 rounded-md text-sm font-medium flex items-center gap-2 transition-colors", viewMode === 'list' ? "bg-slate-100 text-slate-800" : "text-slate-500 hover:text-slate-700")}
+              className={clsx("px-3 py-1.5 rounded-md text-sm font-medium flex items-center gap-2 transition-colors", viewMode === 'list' ? "bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-white" : "text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200")}
             >
               <ListIcon size={16} /> Lista
             </button>
             <button 
               onClick={() => setViewMode('map')}
-              className={clsx("px-3 py-1.5 rounded-md text-sm font-medium flex items-center gap-2 transition-colors", viewMode === 'map' ? "bg-slate-100 text-slate-800" : "text-slate-500 hover:text-slate-700")}
+              className={clsx("px-3 py-1.5 rounded-md text-sm font-medium flex items-center gap-2 transition-colors", viewMode === 'map' ? "bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-white" : "text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200")}
             >
               <MapIcon size={16} /> Mapa
             </button>
@@ -176,24 +176,24 @@ export function PDVAdmin() {
       </div>
 
       {/* Contenedor Principal (Filtros + Vista) */}
-      <div className="bg-white rounded-xl border border-brand-gray-border shadow-sm flex flex-col flex-1 min-h-0">
+      <div className="bg-white dark:bg-dark-card rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col flex-1 min-h-0 transition-colors">
         
         {/* Barra de Filtros interactiva */}
-        <div className="p-4 border-b border-brand-gray-border flex flex-wrap gap-4 items-end bg-slate-50/50 rounded-t-xl z-10">
+        <div className="p-4 border-b border-slate-200 dark:border-slate-700 flex flex-wrap gap-4 items-end bg-slate-50/50 dark:bg-slate-800/50 rounded-t-xl z-10 transition-colors">
           <div className="flex-1 min-w-[200px]">
-            <label className="block text-xs font-medium text-slate-500 mb-1.5">Búsqueda rápida</label>
+            <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1.5">Búsqueda rápida</label>
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
               <input 
                 type="text" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Nombre PDV o Código..." 
-                className="w-full pl-9 pr-3 py-2 border border-slate-200 rounded-lg text-sm focus:ring-1 focus:ring-brand-blue outline-none" 
+                className="w-full pl-9 pr-3 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-white rounded-lg text-sm focus:ring-1 focus:ring-brand-blue outline-none transition-colors" 
               />
             </div>
           </div>
           <div className="w-48">
-            <label className="block text-xs font-medium text-slate-500 mb-1.5">Categoría</label>
-            <select value={categoryFilter} onChange={(e) => setCategoryFilter(e.target.value)} className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm outline-none bg-white cursor-pointer">
+            <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1.5">Categoría</label>
+            <select value={categoryFilter} onChange={(e) => setCategoryFilter(e.target.value)} className="w-full border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm outline-none bg-white dark:bg-slate-800 text-slate-800 dark:text-white cursor-pointer transition-colors">
               <option value="Todas">Todas</option>
               {categorias.map(cat => (
                 <option key={cat.id_categoria} value={cat.id_categoria}>{cat.nombre}</option>
@@ -201,8 +201,8 @@ export function PDVAdmin() {
             </select>
           </div>
           <div className="w-48">
-            <label className="block text-xs font-medium text-slate-500 mb-1.5">Prioridad</label>
-            <select value={priorityFilter} onChange={(e) => setPriorityFilter(e.target.value)} className="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm outline-none bg-white cursor-pointer">
+            <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1.5">Prioridad</label>
+            <select value={priorityFilter} onChange={(e) => setPriorityFilter(e.target.value)} className="w-full border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm outline-none bg-white dark:bg-slate-800 text-slate-800 dark:text-white cursor-pointer transition-colors">
               <option value="Todas">Cualquier</option>
               <option value="alta">Alta</option>
               <option value="media">Media</option>
@@ -218,7 +218,7 @@ export function PDVAdmin() {
           <div className="overflow-x-auto flex-1">
             <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="bg-white text-xs font-semibold text-slate-500 uppercase tracking-wider border-b border-brand-gray-border">
+                <tr className="bg-slate-50 dark:bg-slate-800/50 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider border-b border-slate-200 dark:border-slate-700 transition-colors">
                   <th className="px-5 py-4 w-24">Código GV</th>
                   <th className="px-5 py-4">Punto de Venta</th>
                   <th className="px-5 py-4">Mercado</th>
@@ -228,22 +228,23 @@ export function PDVAdmin() {
               </thead>
               <tbody className="text-sm">
                 {filteredPdvs.map(pdv => (
-                  <tr key={pdv.id_pdv} className="border-b border-slate-100 hover:bg-slate-50">
+                  <tr key={pdv.id_pdv} className="border-b border-slate-100 dark:border-slate-800/50 hover:bg-slate-50 dark:hover:bg-slate-800/80 transition-colors">
                     <td className="px-5 py-4 font-mono text-xs font-semibold text-brand-blue">{pdv.codigo_gv}</td>
                     <td className="px-5 py-4">
-                      <p className="font-bold text-slate-800">{pdv.nombre_pdv || 'Sin Nombre'}</p>
-                      <p className="text-xs text-slate-500">{pdv.direccion || 'Sin Dirección'}</p>
+                      <p className="font-bold text-slate-800 dark:text-slate-200">{pdv.nombre_pdv || 'Sin Nombre'}</p>
+                      <p className="text-xs text-slate-500 dark:text-slate-400">{pdv.direccion || 'Sin Dirección'}</p>
                     </td>
-                    <td className="px-5 py-4 text-slate-600 font-medium">{mercados.find(m => m.id_mercado === pdv.id_mercado)?.nombre || 'N/A'}</td>
+                    <td className="px-5 py-4 text-slate-600 dark:text-slate-300 font-medium">{mercados.find(m => m.id_mercado === pdv.id_mercado)?.nombre || 'N/A'}</td>
                     <td className="px-5 py-4 text-center">
-                      <span className="inline-block border border-slate-200 text-slate-600 text-[11px] font-bold uppercase tracking-wider px-2 py-1 rounded">
+                      <span className="inline-block border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 text-[11px] font-bold uppercase tracking-wider px-2 py-1 rounded transition-colors">
                         {categorias.find(c => c.id_categoria === pdv.id_categoria)?.nombre || 'N/A'}
                       </span>
                     </td>
                     <td className="px-5 py-4 text-center">
                       <span className={clsx("inline-block text-xs font-bold px-2 py-1 rounded-full uppercase", 
-                        pdv.prioridad === 'alta' ? "text-brand-red bg-red-50" : 
-                        pdv.prioridad === 'media' ? "text-brand-blue bg-blue-50" : "text-slate-600 bg-slate-100"
+                        pdv.prioridad === 'alta' ? "text-red-700 bg-red-100 dark:bg-red-900/30 dark:text-red-400" : 
+                        pdv.prioridad === 'media' ? "text-blue-700 bg-blue-100 dark:bg-blue-900/30 dark:text-blue-400" : 
+                        "text-slate-600 bg-slate-100 dark:bg-slate-800 dark:text-slate-400"
                       )}>
                         {pdv.prioridad}
                       </span>
@@ -256,27 +257,27 @@ export function PDVAdmin() {
         ) : (
           <div className="flex flex-1 min-h-0 relative z-0">
             {/* Lista minimalista lateral */}
-            <div className="w-80 bg-white border-r border-brand-gray-border overflow-y-auto hidden md:block shadow-sm z-10">
-              <div className="p-4 border-b border-slate-100 bg-slate-50/80 sticky top-0 backdrop-blur-sm z-20">
-                <h3 className="text-sm font-bold text-slate-800">Puntos de Venta</h3>
-                <p className="text-xs text-slate-500 font-medium">{filteredPdvs.length} locales encontrados</p>
+            <div className="w-80 bg-white dark:bg-dark-card border-r border-slate-200 dark:border-slate-700 overflow-y-auto hidden md:block shadow-sm z-10 transition-colors">
+              <div className="p-4 border-b border-slate-100 dark:border-slate-700 bg-slate-50/80 dark:bg-slate-800/80 sticky top-0 backdrop-blur-sm z-20 transition-colors">
+                <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200">Puntos de Venta</h3>
+                <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">{filteredPdvs.length} locales encontrados</p>
               </div>
               <div className="flex flex-col">
                 {filteredPdvs.map(pdv => (
-                  <div key={pdv.id_pdv} className="p-4 border-b border-slate-50 hover:bg-slate-50/80 cursor-pointer transition-all duration-200 group">
+                  <div key={pdv.id_pdv} className="p-4 border-b border-slate-50 dark:border-slate-800/50 hover:bg-slate-50 dark:hover:bg-slate-800/80 cursor-pointer transition-all duration-200 group">
                     <div className="flex justify-between items-start mb-1.5">
-                      <h4 className="text-sm font-bold text-slate-800 group-hover:text-brand-blue transition-colors leading-tight">
+                      <h4 className="text-sm font-bold text-slate-800 dark:text-slate-200 group-hover:text-brand-blue transition-colors leading-tight">
                         {pdv.nombre_pdv || 'Sin Nombre'}
                       </h4>
                       <span className={clsx(
                         "w-2.5 h-2.5 rounded-full shrink-0 shadow-sm mt-0.5", 
-                        pdv.prioridad === 'alta' ? "bg-brand-red" : 
-                        pdv.prioridad === 'media' ? "bg-brand-blue" : "bg-slate-400"
+                        pdv.prioridad === 'alta' ? "bg-red-500" : 
+                        pdv.prioridad === 'media' ? "bg-blue-500" : "bg-slate-400"
                       )} />
                     </div>
                     <div className="flex items-center justify-between mt-2">
-                      <p className="text-[11px] text-slate-500 font-mono bg-slate-100 px-1.5 py-0.5 rounded">{pdv.codigo_gv}</p>
-                      <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">{categorias.find(c => c.id_categoria === pdv.id_categoria)?.nombre || 'N/A'}</p>
+                      <p className="text-[11px] text-slate-500 dark:text-slate-400 font-mono bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded transition-colors">{pdv.codigo_gv}</p>
+                      <p className="text-[11px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">{categorias.find(c => c.id_categoria === pdv.id_categoria)?.nombre || 'N/A'}</p>
                     </div>
                   </div>
                 ))}
