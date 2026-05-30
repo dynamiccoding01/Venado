@@ -3,7 +3,7 @@ import { MapPin, Navigation, Camera, CheckCircle, Clock, ChevronLeft, Package, U
 import clsx from 'clsx';
 
 // --- MOCK DATA PARA LA VISTA MÓVIL ---
-const routeTasks = [
+const initialRouteTasks = [
   { id: 'GV-042', name: 'Supermercado Ketal', address: 'Av. Arce #1020', status: 'completed', time: '08:30' },
   { id: 'GV-089', name: 'Micromercado San Jorge', address: 'Plaza Isabel la Católica', status: 'current', time: '10:15' },
   { id: 'GV-102', name: 'Tienda Doña Lucha', address: 'Sopocachi', status: 'pending', time: '11:00' },
@@ -11,8 +11,33 @@ const routeTasks = [
 ];
 
 export function MobileReponedor() {
+  const [routeTasks, setRouteTasks] = useState(initialRouteTasks);
   const [isCheckedIn, setIsCheckedIn] = useState(false);
   const [currentTask, setCurrentTask] = useState('inventory'); // inventory, photos, signature
+
+  // Computed: current active PDV
+  const activePdv = routeTasks.find(t => t.status === 'current') || routeTasks.find(t => t.status === 'pending');
+  const progressPct = Math.round((routeTasks.filter(t => t.status === 'completed').length / routeTasks.length) * 100);
+
+  const handleFinishVisit = () => {
+    setIsCheckedIn(false);
+    setCurrentTask('inventory');
+    
+    // Marcar el actual como completado y el siguiente como 'current'
+    let foundCurrent = false;
+    const newTasks = routeTasks.map(t => {
+      if (t.status === 'current') {
+        foundCurrent = true;
+        return { ...t, status: 'completed' };
+      }
+      if (t.status === 'pending' && foundCurrent) {
+        foundCurrent = false; // Solo el primero que sigue
+        return { ...t, status: 'current' };
+      }
+      return t;
+    });
+    setRouteTasks(newTasks);
+  };
 
   return (
     <div className="min-h-screen bg-slate-100 flex items-center justify-center p-4 font-sans">
@@ -55,12 +80,12 @@ export function MobileReponedor() {
             <p className="text-xs text-blue-200 uppercase tracking-widest font-semibold mb-1">Ruta del Día</p>
             <h2 className="text-xl font-bold">Zona Sur (La Paz)</h2>
             <div className="flex justify-between mt-3 text-sm font-medium">
-              <span>Progreso: 25%</span>
-              <span>1 / 4 PDVs</span>
+              <span>Progreso: {progressPct}%</span>
+              <span>{routeTasks.filter(t => t.status === 'completed').length} / {routeTasks.length} PDVs</span>
             </div>
             {/* Progress Bar */}
             <div className="mt-2 h-1.5 w-full bg-black/20 rounded-full overflow-hidden">
-              <div className="h-full bg-white rounded-full w-1/4"></div>
+              <div className="h-full bg-white rounded-full transition-all duration-500" style={{ width: `${progressPct}%` }}></div>
             </div>
           </div>
         </div>
@@ -82,7 +107,7 @@ export function MobileReponedor() {
               <div className="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 relative overflow-hidden">
                 <div className="absolute top-0 left-0 w-1 h-full bg-yellow-400"></div>
                 <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider">En Ubicación</h3>
-                <h4 className="text-lg font-bold text-slate-800 mt-1">Micromercado San Jorge</h4>
+                <h4 className="text-lg font-bold text-slate-800 mt-1">{activePdv ? activePdv.name : 'Ruta Completada'}</h4>
                 
                 {/* Tareas Activas */}
                 <div className="mt-4 flex flex-col gap-3">
@@ -122,7 +147,7 @@ export function MobileReponedor() {
                 </div>
 
                 <button 
-                  onClick={() => setIsCheckedIn(false)}
+                  onClick={handleFinishVisit}
                   className="mt-4 w-full bg-slate-900 text-white py-3 rounded-xl font-bold shadow flex justify-center items-center gap-2"
                 >
                   <CheckCircle size={18} /> Finalizar Visita
