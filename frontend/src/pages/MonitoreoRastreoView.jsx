@@ -207,8 +207,15 @@ export function MonitoreoRastreoView() {
     let colorHex = '#64748b';
     if (estado === 'activo') colorHex = '#10b981';
     if (estado === 'sin_señal') colorHex = '#f59e0b';
-    const html = `<div style="background-color: ${colorHex}; width: 24px; height: 24px; border-radius: 50%; border: 3px solid white; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1); display: flex; align-items: center; justify-content: center;"><div style="width: 8px; height: 8px; background: white; border-radius: 50%;"></div></div>`;
-    return L.divIcon({ html, className: 'custom-rep-marker', iconSize: [24, 24], iconAnchor: [12, 12] });
+    const html = `<div style="background-color: ${colorHex}; width: 36px; height: 36px; border-radius: 50%; border: 3px solid white; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.2); display: flex; align-items: center; justify-content: center;">
+      <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 20px; height: 20px;">
+        <rect x="1" y="3" width="15" height="13"></rect>
+        <polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon>
+        <circle cx="5.5" cy="18.5" r="2.5"></circle>
+        <circle cx="18.5" cy="18.5" r="2.5"></circle>
+      </svg>
+    </div>`;
+    return L.divIcon({ html, className: 'custom-rep-marker', iconSize: [36, 36], iconAnchor: [18, 18] });
   };
 
   const getRouteStatusColor = (status) => {
@@ -356,8 +363,18 @@ export function MonitoreoRastreoView() {
             <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
             <MapUpdater center={mapCenter} zoom={mapZoom} />
             
-            {/* 1. LAYER: Reponedores en vivo (Siempre visibles para contexto) */}
-            {reponedores.filter(r => r.lat && r.lon).map((rep) => (
+            {/* 1. LAYER: Reponedores en vivo */}
+            {reponedores
+              .filter(r => r.lat && r.lon)
+              .filter(r => {
+                // Si estamos en la pestaña de reponedores y hemos seleccionado a uno, 
+                // SOLO mostramos a ese reponedor. Si no, los mostramos todos.
+                if (activeTab === 'reponedores' && selectedRepId) {
+                  return r.id === selectedRepId;
+                }
+                return true;
+              })
+              .map((rep) => (
               <Marker key={`rep-${rep.id}`} position={[rep.lat, rep.lon]} icon={createMarkerIcon(rep.estado)}>
                 <Popup>
                   <div className="font-sans text-xs">
