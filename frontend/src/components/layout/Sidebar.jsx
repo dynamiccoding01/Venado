@@ -9,7 +9,6 @@ const navItems = [
   { id: 'inventory', icon: Package, label: 'PDVs', path: '/pdvs' },
   { id: 'staff', icon: Users, label: 'Personal', path: '/staff' },
   { id: 'reporting', icon: BarChart3, label: 'Reportes KPIs', path: '/reports' },
-  { id: 'settings', icon: Settings, label: 'Ajustes', path: '/settings' },
 ];
 
 export function Sidebar() {
