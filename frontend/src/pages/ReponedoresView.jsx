@@ -23,30 +23,64 @@ export function ReponedoresView() {
   const [wsStatus, setWsStatus] = useState('conectando'); // conectando, conectado, desconectado
 
   useEffect(() => {
-    // 1. Carga inicial vía HTTP para no tener el mapa vacío
-    API.getPosicionesGps()
-      .then(gpsData => {
-        if (Array.isArray(gpsData)) {
-          // Mapeamos el formato de /gps/ al formato que espera el mapa
-          // (Asumiendo que devuelve { id_reponedor, latitud, longitud, timestamp, ... })
-          const initialReponedores = gpsData.map(pos => ({
-            id: pos.id_reponedor || pos.id,
+    // 1. Carga inicial vía HTTP: Traemos TODOS los usuarios (reponedores) y el último GPS
+    Promise.all([
+      API.getUsuarios().catch(() => []),
+      API.getPosicionesGps().catch(() => [])
+    ]).then(([usuarios, gpsData]) => {
+      let initialReponedores = [];
+      
+      // Filtramos solo a los que tienen rol 3 (Reponedor)
+      if (Array.isArray(usuarios)) {
+        initialReponedores = usuarios
+          .filter(u => u.id_rol === 3 || u.rol === 3 || u.usuario?.id_rol === 3)
+          .map(u => ({
+            id: u.id_usuario || u.id,
+            nombre: u.nombre_completo || u.usuario?.nombre_completo || `Reponedor #${u.id_usuario || u.id}`,
+            lat: null,
+            lon: null,
+            estado: 'desconectado',
+            ultimo_update: 'Nunca',
+            pdv_actual: ''
+          }));
+      }
+
+      // Mapeamos los datos de GPS
+      if (Array.isArray(gpsData)) {
+        const gpsMap = new Map();
+        gpsData.forEach(pos => {
+          const id = pos.id_reponedor || pos.id;
+          gpsMap.set(id, {
             lat: pos.latitud || pos.lat,
             lon: pos.longitud || pos.lon,
-            estado: 'activo', // O un estado por defecto basado en tiempo
+            estado: 'activo',
             ultimo_update: pos.timestamp || pos.creado_en || new Date().toISOString(),
             pdv_actual: pos.pdv_actual || ''
-          }));
-          
-          // Agrupar por id_reponedor para quedarnos solo con la última posición de cada uno
-          const ultimasPosicionesMap = new Map();
-          initialReponedores.forEach(r => ultimasPosicionesMap.set(r.id, r));
-          
-          // Solo actualizamos si el WS aún no ha llenado los datos
-          setReponedores(prev => prev.length === 0 ? Array.from(ultimasPosicionesMap.values()) : prev);
-        }
-      })
-      .catch(e => console.error("Error cargando posiciones GPS iniciales:", e));
+          });
+        });
+
+        // Combinamos
+        initialReponedores = initialReponedores.map(rep => {
+          if (gpsMap.has(rep.id)) {
+            return { ...rep, ...gpsMap.get(rep.id) };
+          }
+          return rep;
+        });
+
+        // Añadir los del GPS que por alguna razón no vinieron en la lista de usuarios
+        gpsMap.forEach((gpsInfo, id) => {
+          if (!initialReponedores.find(r => r.id === id)) {
+            initialReponedores.push({
+              id,
+              nombre: `Reponedor #${id}`,
+              ...gpsInfo
+            });
+          }
+        });
+      }
+
+      setReponedores(prev => prev.length === 0 ? initialReponedores : prev);
+    }).catch(e => console.error("Error cargando datos iniciales:", e));
 
     // 2. Conectar WebSocket para el tiempo real
     let supervisorId = 2; // Por defecto
@@ -187,7 +221,7 @@ export function ReponedoresView() {
               >
                 <Popup>
                   <div className="font-sans">
-                    <p className="font-bold text-sm text-slate-800">Reponedor #{rep.id}</p>
+                    <p className="font-bold text-sm text-slate-800">{rep.nombre || `Reponedor #${rep.id}`}</p>
                     <p className="text-xs text-slate-500 mt-1">Estado: {getStatusText(rep.estado)}</p>
                     {rep.pdv_actual && <p className="text-xs font-mono bg-slate-100 p-1 mt-2 rounded">PDV: {rep.pdv_actual}</p>}
                     <p className="text-[10px] text-slate-400 mt-2">Última act: {new Date(rep.ultimo_update).toLocaleTimeString()}</p>
@@ -237,7 +271,7 @@ export function ReponedoresView() {
                       <div className="flex justify-between items-start mb-2">
                         <div className="flex items-center gap-2">
                           <Users className={isSelected ? "text-brand-blue" : "text-slate-400"} size={16} />
-                          <h4 className="font-bold text-sm text-slate-800 dark:text-slate-100">Reponedor #{rep.id}</h4>
+                          <h4 className="font-bold text-sm text-slate-800 dark:text-slate-100">{rep.nombre || `Reponedor #${rep.id}`}</h4>
                         </div>
                         <div className="flex items-center gap-1.5">
                           <span className={clsx("w-2 h-2 rounded-full ring-2", getStatusColor(rep.estado))}></span>
