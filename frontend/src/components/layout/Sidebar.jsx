@@ -6,8 +6,7 @@ import logo from '../../assets/logo.jpg';
 
 const navItems = [
   { id: 'dashboard', icon: Home, label: 'Dashboard', path: '/' },
-  { id: 'routes', icon: Route, label: 'Gestión de Rutas', path: '/routes' },
-  { id: 'reponedores', icon: Navigation, label: 'Rastreo GPS', path: '/reponedores' },
+  { id: 'monitoreo', icon: Navigation, label: 'Monitoreo y Rastreo', path: '/monitoreo' },
   { id: 'pdvs', icon: MapPin, label: 'PDVs', path: '/pdvs' },
   { id: 'staff', icon: Users, label: 'Personal', path: '/staff' },
   { id: 'mercados', icon: Settings, label: 'Mercados', path: '/mercados' },

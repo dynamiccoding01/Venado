@@ -2,7 +2,7 @@ import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { MainLayout } from './components/layout/MainLayout';
 import { Dashboard } from './pages/Dashboard';
-import { RoutesView } from './pages/RoutesView';
+import { MonitoreoRastreoView } from './pages/MonitoreoRastreoView';
 import { PDVAdmin } from './pages/PDVAdmin';
 import { ReportsView } from './pages/ReportsView';
 import { Login } from './pages/Login';
@@ -11,7 +11,6 @@ import { StaffAdmin } from './pages/StaffAdmin';
 import { Settings } from './pages/Settings';
 import { MercadosAdmin } from './pages/MercadosAdmin';
 import { CategoriasAdmin } from './pages/CategoriasAdmin';
-import { ReponedoresView } from './pages/ReponedoresView';
 import { ThemeProvider } from './context/ThemeContext';
 
 export default function App() {
@@ -56,9 +55,8 @@ export default function App() {
         {/* Rutas Privadas (Requieren Layout con Sidebar) */}
         <Route element={<ProtectedRoute><MainLayout /></ProtectedRoute>}>
           <Route path="/" element={<Dashboard />} />
-          <Route path="/routes" element={<RoutesView />} />
+          <Route path="/monitoreo" element={<MonitoreoRastreoView />} />
           <Route path="/pdvs" element={<PDVAdmin />} />
-          <Route path="/reponedores" element={<ReponedoresView />} />
           <Route path="/reports" element={<ReportsView />} />
           
           {/* Rutas exclusivas para Administradores (id_rol = 1) */}
