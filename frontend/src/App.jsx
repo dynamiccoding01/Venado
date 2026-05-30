@@ -8,7 +8,6 @@ import { ReportsView } from './pages/ReportsView';
 import { Login } from './pages/Login';
 import { MobileReponedor } from './pages/MobileReponedor';
 import { StaffAdmin } from './pages/StaffAdmin';
-import { StaffAdmin } from './pages/StaffAdmin';
 import { Settings } from './pages/Settings';
 import { CatalogsView } from './pages/CatalogsView';
 import { ThemeProvider } from './context/ThemeContext';

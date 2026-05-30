@@ -2,7 +2,6 @@ import React from 'react';
 import { Home, Route, Package, Users, BarChart3, Settings } from 'lucide-react';
 import { NavLink } from 'react-router-dom';
 import clsx from 'clsx';
-import clsx from 'clsx';
 import logo from '../../assets/logo.jpg';
 
 const navItems = [
