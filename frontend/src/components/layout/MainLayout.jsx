@@ -5,7 +5,7 @@ import { Header } from './Header';
 
 export function MainLayout() {
   return (
-    <div className="flex h-screen w-full overflow-hidden bg-slate-50 dark:bg-dark-bg text-slate-800 dark:text-slate-100 font-sans transition-colors duration-500">
+    <div className="flex flex-col-reverse md:flex-row h-screen w-full overflow-hidden bg-slate-50 dark:bg-dark-bg text-slate-800 dark:text-slate-100 font-sans transition-colors duration-500">
       {/* Left Sidebar */}
       <Sidebar />
       
