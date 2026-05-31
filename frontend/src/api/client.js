@@ -125,6 +125,9 @@ export const API = {
   getPosicionesGps: async () => {
     return apiFetch('/gps/');
   },
+  getUltimasUbicaciones: async () => {
+    return apiFetch('/usuarios/reponedores/ultimas-ubicaciones');
+  },
   getHistorialGps: async (id_usuario, fechaInicio, fechaFin) => {
     if (!fechaFin || fechaInicio === fechaFin) {
       return apiFetch(`/usuarios/${id_usuario}/gps?fecha=${fechaInicio}`);

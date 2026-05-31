@@ -61,7 +61,7 @@ export function MonitoreoRastreoView() {
   useEffect(() => {
     Promise.all([
       API.getUsuarios().catch(() => []),
-      API.getPosicionesGps().catch(() => []),
+      API.getUltimasUbicaciones().catch(() => []),
       API.getPdvs().catch(() => [])
     ]).then(([usuarios, gpsData, pdvData]) => {
       
@@ -79,11 +79,14 @@ export function MonitoreoRastreoView() {
       if (Array.isArray(gpsData)) {
         const gpsMap = new Map();
         gpsData.forEach(pos => {
-          const id = pos.id_reponedor || pos.id;
-          const ultimo_update = pos.timestamp || pos.creado_en || new Date().toISOString();
+          const id = pos.id_usuario || pos.id_reponedor || pos.id;
+          const ultimo_update = pos.ultima_conexion || pos.timestamp || pos.creado_en || new Date().toISOString();
           gpsMap.set(id, {
-            lat: pos.latitud || pos.lat, lon: pos.longitud || pos.lon,
-            ultimo_update, pdv_actual: pos.pdv_actual || ''
+            lat: pos.lat_actual || pos.latitud || pos.lat, 
+            lon: pos.lon_actual || pos.longitud || pos.lon,
+            ultimo_update, 
+            online: pos.online,
+            pdv_actual: pos.pdv_actual || ''
           });
         });
         initialReponedores = initialReponedores.map(rep => gpsMap.has(rep.id) ? { ...rep, ...gpsMap.get(rep.id) } : rep);
@@ -130,7 +133,7 @@ export function MonitoreoRastreoView() {
   useEffect(() => {
     const fetchGpsUpdate = async () => {
       try {
-        const gpsData = await API.getPosicionesGps();
+        const gpsData = await API.getUltimasUbicaciones();
         if (Array.isArray(gpsData)) {
           setReponedores(prev => {
             if (prev.length === 0) return prev;
@@ -138,16 +141,17 @@ export function MonitoreoRastreoView() {
             let hasChanges = false;
             
             gpsData.forEach(pos => {
-              const id = pos.id_reponedor || pos.id;
+              const id = pos.id_usuario || pos.id_reponedor || pos.id;
               if (prevMap.has(id)) {
                 const current = prevMap.get(id);
-                const newLat = pos.latitud || pos.lat;
-                const newLon = pos.longitud || pos.lon;
-                const newUpdate = pos.timestamp || pos.creado_en || new Date().toISOString();
+                const newLat = pos.lat_actual || pos.latitud || pos.lat;
+                const newLon = pos.lon_actual || pos.longitud || pos.lon;
+                const newUpdate = pos.ultima_conexion || pos.timestamp || pos.creado_en || new Date().toISOString();
+                const newOnline = pos.online;
                 
-                // Solo actualizar si la posición realmente cambió
-                if (current.lat !== newLat || current.lon !== newLon) {
-                  prevMap.set(id, { ...current, lat: newLat, lon: newLon, ultimo_update: newUpdate, pdv_actual: pos.pdv_actual || '' });
+                // Actualizar si cambió posición o estado
+                if (current.lat !== newLat || current.lon !== newLon || current.online !== newOnline || current.ultimo_update !== newUpdate) {
+                  prevMap.set(id, { ...current, lat: newLat, lon: newLon, ultimo_update: newUpdate, online: newOnline, pdv_actual: pos.pdv_actual || '' });
                   hasChanges = true;
                 }
               }
@@ -249,7 +253,7 @@ export function MonitoreoRastreoView() {
 
   const displayReponedores = reponedores.map((r) => ({
     ...r,
-    estado: calcularEstado(r.ultimo_update)
+    estado: r.online !== undefined ? (r.online ? 'activo' : 'desconectado') : calcularEstado(r.ultimo_update)
   })).sort((a, b) => {
     // 1. Activos primero
     if (a.estado === 'activo' && b.estado !== 'activo') return -1;
