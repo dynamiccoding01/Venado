@@ -7,13 +7,13 @@ import clsx from 'clsx';
 import { API } from '../api/client';
 import { useSearchParams } from 'react-router-dom';
 
-function MapUpdater({ center, zoom }) {
+function MapUpdater({ center, zoom, updateKey }) {
   const map = useMap();
   useEffect(() => {
     if (center && center[0] && center[1]) {
       map.flyTo(center, zoom, { duration: 1.5 });
     }
-  }, [center, zoom, map]);
+  }, [center[0], center[1], zoom, updateKey, map]);
   return null;
 }
 
@@ -47,6 +47,7 @@ export function MonitoreoRastreoView() {
   // Unified Map Center
   const [mapCenter, setMapCenter] = useState([-16.5000, -68.1500]);
   const [mapZoom, setMapZoom] = useState(13);
+  const [mapUpdateKey, setMapUpdateKey] = useState(0);
 
   // === REPONEDORES STATE ===
   const [reponedores, setReponedores] = useState([]);
@@ -233,8 +234,9 @@ export function MonitoreoRastreoView() {
     setSelectedRepId(rep.id);
     setViewMode('global'); // Regresar a modo focalizado (global con zoom)
     if (rep.lat && rep.lon) {
-      setMapCenter([rep.lat, rep.lon]);
+      setMapCenter([Number(rep.lat), Number(rep.lon)]);
       setMapZoom(16);
+      setMapUpdateKey(prev => prev + 1); // Forzar actualización de mapa
     }
   };
 
@@ -263,11 +265,16 @@ export function MonitoreoRastreoView() {
 
   const calcularEstado = (ultimoUpdate) => {
     if (!ultimoUpdate || ultimoUpdate === 'Nunca') return 'desconectado';
+    
+    // Convert to Date
     const lastTime = new Date(ultimoUpdate).getTime();
     if (isNaN(lastTime)) return 'desconectado';
+    
     const now = new Date().getTime();
     const diffMinutes = (now - lastTime) / (1000 * 60);
-    return diffMinutes <= 1.5 ? 'activo' : 'desconectado';
+    
+    // Usamos Math.abs para tolerar desincronizaciones de servidor donde el tiempo podría venir ligeramente "en el futuro"
+    return Math.abs(diffMinutes) <= 1.5 ? 'activo' : 'desconectado';
   };
 
   const displayReponedores = reponedores.map((r) => ({
@@ -519,7 +526,7 @@ export function MonitoreoRastreoView() {
 
           <MapContainer center={mapCenter} zoom={mapZoom} className="w-full h-full">
             <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-            <MapUpdater center={mapCenter} zoom={mapZoom} />
+            <MapUpdater center={mapCenter} zoom={mapZoom} updateKey={mapUpdateKey} />
             
             {/* CAPA 0: Todos los Puntos de Venta (PDVs) - Solo en Modo Global */}
             {viewMode === 'global' && pdvs.map(pdv => (
