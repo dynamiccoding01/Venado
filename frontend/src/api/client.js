@@ -103,6 +103,12 @@ export const API = {
       body: JSON.stringify(data)
     });
   },
+  actualizarPdv: async (id, data) => {
+    return apiFetch(`/pdvs/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data)
+    });
+  },
 
   // Mercados
   getMercados: async () => {
