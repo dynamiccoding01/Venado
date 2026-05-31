@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Search, Bell, User, Settings, Moon, Sun, LogOut } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import clsx from 'clsx';
+import logo from '../../assets/logo.jpg';
 import { useTheme } from '../../context/ThemeContext';
 import { API } from '../../api/client';
 
@@ -40,8 +41,13 @@ export function Header() {
 
   return (
     <header className="glass-header h-20 flex items-center justify-between px-8 shrink-0 z-20 relative">
-      {/* Left side: Search */}
-      <div className="flex items-center h-full">
+      {/* Left side: Search and Mobile Logo */}
+      <div className="flex items-center h-full gap-4">
+        {/* Mobile Logo */}
+        <div className="w-10 h-10 bg-white rounded-xl flex md:hidden items-center justify-center shadow-md overflow-hidden p-1">
+          <img src={logo} alt="Venado" className="w-full h-full object-contain" />
+        </div>
+
         <div className="relative w-80 hidden lg:block">
           <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500" size={18} />
           <input 

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Home, Route, Package, Users, BarChart3, Settings, Navigation, MapPin } from 'lucide-react';
+import { Home, Route, Package, Users, BarChart3, Settings, Navigation, MapPin, Store, Tags } from 'lucide-react';
 import { NavLink } from 'react-router-dom';
 import clsx from 'clsx';
 import logo from '../../assets/logo.jpg';
@@ -9,8 +9,8 @@ const navItems = [
   { id: 'monitoreo', icon: Navigation, label: 'Monitoreo y Rastreo', path: '/monitoreo' },
   { id: 'pdvs', icon: MapPin, label: 'PDVs', path: '/pdvs' },
   { id: 'staff', icon: Users, label: 'Personal', path: '/staff' },
-  { id: 'mercados', icon: Settings, label: 'Mercados', path: '/mercados' },
-  { id: 'categorias', icon: Package, label: 'Categorías', path: '/categorias' },
+  { id: 'mercados', icon: Store, label: 'Mercados y Zonas', path: '/mercados' },
+  { id: 'categorias', icon: Tags, label: 'Categorías', path: '/categorias' },
   { id: 'reporting', icon: BarChart3, label: 'Reportes KPIs', path: '/reports' },
 ];
 
