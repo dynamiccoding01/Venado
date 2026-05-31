@@ -87,11 +87,6 @@ export function MonitoreoRastreoView() {
           });
         });
         initialReponedores = initialReponedores.map(rep => gpsMap.has(rep.id) ? { ...rep, ...gpsMap.get(rep.id) } : rep);
-        gpsMap.forEach((gpsInfo, id) => {
-          if (!initialReponedores.find(r => r.id === id)) {
-            initialReponedores.push({ id, nombre: `Reponedor #${id}`, ...gpsInfo });
-          }
-        });
       }
       setReponedores(prev => {
         if (prev.length === 0) return initialReponedores;
@@ -121,9 +116,6 @@ export function MonitoreoRastreoView() {
             const now = new Date().toISOString();
             const incomingMap = new Map(data.reponedores.map(r => [r.id || r.id_reponedor, { ...r, ultimo_update: r.ultimo_update || now }]));
             const updated = prev.map(p => incomingMap.has(p.id) ? { ...p, ...incomingMap.get(p.id) } : p);
-            incomingMap.forEach((val, id) => {
-              if (!updated.find(u => u.id === id)) updated.push(val);
-            });
             return updated;
           });
         }
