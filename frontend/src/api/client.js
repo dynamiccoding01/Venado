@@ -71,6 +71,7 @@ export const API = {
   getMetrics: () => apiFetch('/dashboard/metrics'),
   getMetricasPorFecha: (fecha) => apiFetch(`/dashboard/metricas/${fecha}`),
   getKpis: (fecha) => apiFetch(`/kpis/?fecha=${fecha}`),
+  getDashboardDesviaciones: (fecha) => apiFetch(`/dashboard/desviaciones?fecha=${fecha}`),
   
   // Clima
   getClima: (lat, lon) => apiFetch(`/clima/${lat}/${lon}`),

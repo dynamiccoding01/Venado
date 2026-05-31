@@ -16,16 +16,16 @@ export function ReportsView() {
   const loadReports = async () => {
     setIsLoading(true);
     try {
-      const [mets, kpiData] = await Promise.all([
-        API.getMetricasPorFecha(fecha).catch(() => null),
-        API.getKpis(fecha).catch(() => [])
-      ]);
-      setMetricas(mets || {
-        cumplimiento_total: 0,
-        rutas_completadas: 0,
-        tiempo_promedio_visita_min: 0
-      });
-      setKpis(Array.isArray(kpiData) ? kpiData : []);
+      // Intentamos obtener el nuevo endpoint de Desviaciones (Fase 3)
+      const data = await API.getDashboardDesviaciones(fecha).catch(() => null);
+      if (data) {
+        setMetricas(data);
+        setKpis(Array.isArray(data.reponedores) ? data.reponedores : []);
+      } else {
+        // Fallback si no hay datos
+        setMetricas(null);
+        setKpis([]);
+      }
     } catch (e) {
       console.error("Error cargando reportes", e);
     } finally {
@@ -82,33 +82,35 @@ export function ReportsView() {
         <div className="flex flex-col gap-6">
           {/* Métricas Globales */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="bg-white dark:bg-dark-card border border-slate-200 dark:border-slate-700 rounded-xl p-5 shadow-sm transition-colors flex items-center gap-4">
-              <div className="w-12 h-12 rounded-full bg-blue-50 dark:bg-brand-blue/10 flex items-center justify-center">
+            <div className="bg-white dark:bg-dark-card border border-slate-200 dark:border-slate-700 rounded-xl p-5 shadow-sm transition-colors flex items-center gap-4 hover:border-brand-blue/30 group">
+              <div className="w-12 h-12 rounded-full bg-blue-50 dark:bg-brand-blue/10 flex items-center justify-center group-hover:scale-110 transition-transform">
                 <CheckCircle className="text-brand-blue" size={24} />
               </div>
               <div>
                 <p className="text-sm font-bold text-slate-500 dark:text-slate-400">Cumplimiento Global</p>
-                <h3 className="text-2xl font-black text-slate-800 dark:text-white">{metricas?.cumplimiento_total || 0}%</h3>
+                <h3 className="text-2xl font-black text-slate-800 dark:text-white">{metricas?.tasa_cumplimiento_pct != null ? metricas.tasa_cumplimiento_pct : 0}%</h3>
               </div>
             </div>
 
-            <div className="bg-white dark:bg-dark-card border border-slate-200 dark:border-slate-700 rounded-xl p-5 shadow-sm transition-colors flex items-center gap-4">
-              <div className="w-12 h-12 rounded-full bg-emerald-50 dark:bg-emerald-500/10 flex items-center justify-center">
+            <div className="bg-white dark:bg-dark-card border border-slate-200 dark:border-slate-700 rounded-xl p-5 shadow-sm transition-colors flex items-center gap-4 hover:border-emerald-500/30 group">
+              <div className="w-12 h-12 rounded-full bg-emerald-50 dark:bg-emerald-500/10 flex items-center justify-center group-hover:scale-110 transition-transform">
                 <TrendingUp className="text-emerald-500" size={24} />
               </div>
               <div>
-                <p className="text-sm font-bold text-slate-500 dark:text-slate-400">Rutas Completadas</p>
-                <h3 className="text-2xl font-black text-slate-800 dark:text-white">{metricas?.rutas_completadas || 0}</h3>
+                <p className="text-sm font-bold text-slate-500 dark:text-slate-400">Visitas Completadas</p>
+                <h3 className="text-2xl font-black text-slate-800 dark:text-white">
+                  {metricas?.completadas || 0} <span className="text-sm font-bold text-slate-400">/ {metricas?.total_planificadas || 0}</span>
+                </h3>
               </div>
             </div>
 
-            <div className="bg-white dark:bg-dark-card border border-slate-200 dark:border-slate-700 rounded-xl p-5 shadow-sm transition-colors flex items-center gap-4">
-              <div className="w-12 h-12 rounded-full bg-purple-50 dark:bg-purple-500/10 flex items-center justify-center">
-                <Clock className="text-purple-500" size={24} />
+            <div className="bg-white dark:bg-dark-card border border-slate-200 dark:border-slate-700 rounded-xl p-5 shadow-sm transition-colors flex items-center gap-4 hover:border-red-500/30 group">
+              <div className="w-12 h-12 rounded-full bg-red-50 dark:bg-red-500/10 flex items-center justify-center group-hover:scale-110 transition-transform">
+                <Clock className="text-red-500" size={24} />
               </div>
               <div>
-                <p className="text-sm font-bold text-slate-500 dark:text-slate-400">T. Promedio Visita</p>
-                <h3 className="text-2xl font-black text-slate-800 dark:text-white">{metricas?.tiempo_promedio_visita_min || 0} min</h3>
+                <p className="text-sm font-bold text-slate-500 dark:text-slate-400">Visitas Fallidas</p>
+                <h3 className="text-2xl font-black text-red-500 dark:text-red-400">{metricas?.no_realizadas || 0} <span className="text-sm font-bold text-slate-400">NO REALIZADAS</span></h3>
               </div>
             </div>
           </div>
@@ -129,39 +131,46 @@ export function ReportsView() {
                 <table className="w-full text-left border-collapse">
                   <thead>
                     <tr className="bg-slate-50 dark:bg-slate-800/50 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase border-b border-slate-200 dark:border-slate-700 transition-colors">
-                      <th className="px-4 py-3 rounded-tl-lg">ID Reponedor</th>
-                      <th className="px-4 py-3">Ruta Asignada</th>
-                      <th className="px-4 py-3 text-center">Cumplimiento (%)</th>
-                      <th className="px-4 py-3 text-center rounded-tr-lg">Estado</th>
+                      <th className="px-4 py-3 rounded-tl-lg">Reponedor</th>
+                      <th className="px-4 py-3 text-center">Visitas Completadas</th>
+                      <th className="px-4 py-3 text-center">No Realizadas</th>
+                      <th className="px-4 py-3 text-center rounded-tr-lg">Desviación (Orden)</th>
                     </tr>
                   </thead>
                   <tbody className="text-sm">
                     {kpis.map((kpi, idx) => (
                       <tr key={idx} className="border-b border-slate-100 dark:border-slate-800/50 hover:bg-slate-50 dark:hover:bg-slate-800/80 transition-colors">
-                        <td className="px-4 py-4 text-slate-600 dark:text-slate-300 font-bold">
-                          REP-{kpi.id_reponedor}
-                        </td>
-                        <td className="px-4 py-4 text-slate-600 dark:text-slate-400 font-medium">
-                          {kpi.id_ruta ? `Ruta #${kpi.id_ruta}` : 'Sin ruta'}
-                        </td>
-                        <td className="px-4 py-4 text-center">
-                          <div className="flex items-center justify-center gap-2">
-                            <span className="font-bold text-slate-800 dark:text-slate-200">{kpi.cumplimiento_ruta || 0}%</span>
-                            <div className="w-16 h-2 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
-                              <div 
-                                className={clsx("h-full", kpi.cumplimiento_ruta >= 80 ? "bg-emerald-500" : kpi.cumplimiento_ruta >= 50 ? "bg-amber-500" : "bg-red-500")} 
-                                style={{ width: `${kpi.cumplimiento_ruta || 0}%` }}
-                              ></div>
-                            </div>
+                        <td className="px-4 py-4 text-slate-800 dark:text-slate-200 font-bold flex items-center gap-2">
+                          <div className="w-8 h-8 rounded-full bg-brand-blue/10 text-brand-blue flex items-center justify-center text-xs">
+                            {kpi.nombre ? kpi.nombre.charAt(0) : 'R'}
+                          </div>
+                          <div>
+                            <p>{kpi.nombre || 'Reponedor'}</p>
+                            <p className="text-[10px] text-slate-500 font-mono tracking-widest">ID: {kpi.id_reponedor}</p>
                           </div>
                         </td>
                         <td className="px-4 py-4 text-center">
-                          <span className={clsx("px-2 py-1 rounded text-[10px] font-bold uppercase", 
-                            kpi.cumplimiento_ruta >= 100 ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400" : 
-                            "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400"
-                          )}>
-                            {kpi.cumplimiento_ruta >= 100 ? 'Completado' : 'En Progreso'}
-                          </span>
+                          <span className="font-black text-emerald-600 dark:text-emerald-400 text-lg">{kpi.completadas || 0}</span>
+                        </td>
+                        <td className="px-4 py-4 text-center">
+                          {kpi.no_realizadas > 0 ? (
+                            <span className="bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 px-2.5 py-1 rounded-full font-bold text-xs">{kpi.no_realizadas}</span>
+                          ) : (
+                            <span className="text-slate-400 font-medium">-</span>
+                          )}
+                        </td>
+                        <td className="px-4 py-4 text-center">
+                          <div className="flex flex-col items-center justify-center gap-1">
+                            <span className={clsx("font-bold text-sm", kpi.desviacion_orden_pct > 20 ? "text-red-500" : kpi.desviacion_orden_pct > 0 ? "text-amber-500" : "text-emerald-500")}>
+                              {kpi.desviacion_orden_pct != null ? kpi.desviacion_orden_pct : 0}%
+                            </span>
+                            <div className="w-20 h-1.5 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
+                              <div 
+                                className={clsx("h-full", kpi.desviacion_orden_pct > 20 ? "bg-red-500" : kpi.desviacion_orden_pct > 0 ? "bg-amber-500" : "bg-emerald-500")} 
+                                style={{ width: `${Math.min(100, kpi.desviacion_orden_pct || 0)}%` }}
+                              ></div>
+                            </div>
+                          </div>
                         </td>
                       </tr>
                     ))}
