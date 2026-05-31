@@ -44,25 +44,27 @@ export function Header({ hidden }) {
       "glass-header h-16 md:h-20 flex items-center justify-between px-4 md:px-8 shrink-0 z-20 relative transition-all duration-300 ease-in-out",
       hidden ? "-mt-16 md:-mt-20 opacity-0 pointer-events-none" : "mt-0 opacity-100"
     )}>
-      {/* Left side: Search and Mobile Logo */}
-      <div className="flex items-center h-full gap-4">
+      {/* Left side: Mobile Logo */}
+      <div className="flex items-center h-full">
         {/* Mobile Logo */}
         <div className="w-10 h-10 bg-white rounded-xl flex md:hidden items-center justify-center shadow-md overflow-hidden p-1">
           <img src={logo} alt="Venado" className="w-full h-full object-contain" />
         </div>
-
-        <div className="relative w-80 hidden lg:block">
-          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500" size={18} />
-          <input 
-            type="text" 
-            placeholder="Buscar PDV, reponedor, ruta..." 
-            className="w-full pl-11 pr-4 py-2.5 bg-slate-100/50 dark:bg-dark-card/50 border border-slate-200 dark:border-dark-border rounded-2xl text-sm font-medium text-slate-800 dark:text-slate-200 focus:bg-white dark:focus:bg-dark-card focus:border-brand-blue focus:ring-1 focus:ring-brand-blue outline-none transition-all duration-300 shadow-sm"
-          />
-        </div>
       </div>
 
-      {/* Right side: Notifications, Profile */}
-      <div className="flex items-center gap-5">
+      {/* Right side: Search, Notifications, Profile */}
+      <div className="flex items-center gap-2 md:gap-5 flex-1 justify-end ml-4">
+        
+        {/* Search */}
+        <div className="relative w-full max-w-[140px] sm:max-w-[200px] lg:max-w-[320px]">
+          <Search className="absolute left-2.5 md:left-3.5 top-1/2 -translate-y-1/2 text-slate-400 dark:text-slate-500" size={16} />
+          <input 
+            type="text" 
+            placeholder="Buscar..." 
+            className="w-full pl-8 md:pl-11 pr-3 md:pr-4 py-2 md:py-2.5 bg-slate-100/50 dark:bg-dark-card/50 border border-slate-200 dark:border-dark-border rounded-xl md:rounded-2xl text-xs md:text-sm font-medium text-slate-800 dark:text-slate-200 focus:bg-white dark:focus:bg-dark-card focus:border-brand-blue focus:ring-1 focus:ring-brand-blue outline-none transition-all duration-300 shadow-sm"
+          />
+        </div>
+
         
         {/* Action Buttons */}
         <button className="relative p-2.5 text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-dark-border rounded-xl transition-all duration-300 hover:scale-105 active:scale-95">
