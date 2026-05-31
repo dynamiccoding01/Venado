@@ -16,16 +16,43 @@ export function ReportsView() {
   const loadReports = async () => {
     setIsLoading(true);
     try {
-      // Intentamos obtener el nuevo endpoint de Desviaciones (Fase 3)
-      const data = await API.getDashboardDesviaciones(fecha).catch(() => null);
-      if (data) {
-        setMetricas(data);
-        setKpis(Array.isArray(data.reponedores) ? data.reponedores : []);
-      } else {
-        // Fallback si no hay datos
-        setMetricas(null);
-        setKpis([]);
-      }
+      // Simulación de delay de red
+      await new Promise(resolve => setTimeout(resolve, 600));
+
+      // Datos ficticios (Mock) para Preview
+      const mockData = {
+        fecha: fecha,
+        total_planificadas: 120,
+        completadas: 95,
+        no_realizadas: 5,
+        tasa_cumplimiento_pct: 79.1,
+        reponedores: [
+          {
+            id_reponedor: 1,
+            nombre: "Juan Mamani",
+            completadas: 25,
+            no_realizadas: 2,
+            desviacion_orden_pct: 12.5
+          },
+          {
+            id_reponedor: 5,
+            nombre: "Alexis Rodriguez",
+            completadas: 30,
+            no_realizadas: 0,
+            desviacion_orden_pct: 0
+          },
+          {
+            id_reponedor: 8,
+            nombre: "Maria Gomez",
+            completadas: 40,
+            no_realizadas: 3,
+            desviacion_orden_pct: 25.0
+          }
+        ]
+      };
+
+      setMetricas(mockData);
+      setKpis(mockData.reponedores);
     } catch (e) {
       console.error("Error cargando reportes", e);
     } finally {
@@ -35,25 +62,18 @@ export function ReportsView() {
 
   const handleExport = async () => {
     try {
-      const response = await fetch(`https://innovahack-gcrh.onrender.com/reporte/exportar/${fecha}`);
-      if (!response.ok) throw new Error("Error obteniendo el reporte del servidor");
-      
-      let csvText = await response.text();
-      
-      // Función para convertir separador de comas (,) a punto y coma (;) respetando comillas dobles
-      let inQuotes = false;
-      let finalCsvText = "";
-      for (let i = 0; i < csvText.length; i++) {
-        let char = csvText[i];
-        if (char === '"') {
-          inQuotes = !inQuotes;
-          finalCsvText += char;
-        } else if (char === ',' && !inQuotes) {
-          finalCsvText += ';'; // Reemplazar coma por punto y coma si no estamos dentro de comillas
-        } else {
-          finalCsvText += char;
-        }
-      }
+      // Generar CSV ficticio bien alineado con los datos solicitados
+      const mockRows = [
+        ["reponedor", "pdv_codigo", "pdv_nombre", "categoria", "mercado", "hora_inicio", "hora_fin", "tiempo_real_min", "tiempo_estimado_min", "desviacion_min", "estado", "notas"],
+        ["alexis", "GV-1403", "UPSA", "MAYORISTA", "10 DE ENERO", "08:00", "08:15", "15.0", "15.0", "0.0", "completada", "Todo en orden"],
+        ["alexis", "GV007", "upsas", "MINORISTA", "CHASQUIPAMPA", "08:20", "08:40", "20.0", "15.0", "5.0", "completada", ""],
+        ["Reponedor 1", "GV002", "Tienda XYZ", "MINORISTA", "CHASQUIPAMPA", "", "", "0.0", "30.0", "0.0", "no_realizada", "Local cerrado"],
+        ["Reponedor 1", "GV001", "Kiosco Maria", "MINORISTA", "CHASQUIPAMPA", "09:00", "09:40", "40.0", "30.0", "10.0", "completada", "Mucha fila para entregar"],
+        ["Reponedor 1", "GV003", "Micromercado Sol", "MINORISTA", "CHASQUIPAMPA", "10:00", "10:20", "20.0", "20.0", "0.0", "completada", ""]
+      ];
+
+      // Unir usando punto y coma (;) que es estándar para Excel en Latinoamérica/España. Se usan comillas para evitar rupturas por texto con comas.
+      const finalCsvText = mockRows.map(row => row.map(cell => `"${cell}"`).join(";")).join("\n");
 
       // Añadir BOM (Byte Order Mark) para UTF-8, asegura que Excel lea tildes y ñ correctamente
       const bom = "\uFEFF";
@@ -62,7 +82,7 @@ export function ReportsView() {
       
       const link = document.createElement("a");
       link.href = url;
-      link.setAttribute("download", `reporte_${fecha}.csv`);
+      link.setAttribute("download", `reporte_preview_${fecha}.csv`);
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
