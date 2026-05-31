@@ -126,6 +126,45 @@ export function MonitoreoRastreoView() {
     return () => { if (ws.readyState === 1) ws.close(); };
   }, []);
 
+  // Polling fallback para actualizar GPS cada 10 segundos
+  useEffect(() => {
+    const fetchGpsUpdate = async () => {
+      try {
+        const gpsData = await API.getPosicionesGps();
+        if (Array.isArray(gpsData)) {
+          setReponedores(prev => {
+            if (prev.length === 0) return prev;
+            const prevMap = new Map(prev.map(p => [p.id, p]));
+            let hasChanges = false;
+            
+            gpsData.forEach(pos => {
+              const id = pos.id_reponedor || pos.id;
+              if (prevMap.has(id)) {
+                const current = prevMap.get(id);
+                const newLat = pos.latitud || pos.lat;
+                const newLon = pos.longitud || pos.lon;
+                const newUpdate = pos.timestamp || pos.creado_en || new Date().toISOString();
+                
+                // Solo actualizar si la posición realmente cambió
+                if (current.lat !== newLat || current.lon !== newLon) {
+                  prevMap.set(id, { ...current, lat: newLat, lon: newLon, ultimo_update: newUpdate, pdv_actual: pos.pdv_actual || '' });
+                  hasChanges = true;
+                }
+              }
+            });
+            
+            return hasChanges ? Array.from(prevMap.values()) : prev;
+          });
+        }
+      } catch (e) {
+        console.error("Error en polling GPS:", e);
+      }
+    };
+
+    const interval = setInterval(fetchGpsUpdate, 10000);
+    return () => clearInterval(interval);
+  }, []);
+
   // Load Historial GPS
   useEffect(() => {
     if (selectedRepId) {
