@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMap, Polyline, CircleMarker } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import { Users, Navigation, Radio, MapPin, Search, Route, Zap } from 'lucide-react';
+import { Users, Navigation, Radio, MapPin, Search, Route, Zap, Eye, EyeOff } from 'lucide-react';
 import clsx from 'clsx';
 import { API } from '../api/client';
 import { useSearchParams } from 'react-router-dom';
@@ -39,6 +39,7 @@ export function MonitoreoRastreoView() {
   const [fechaInicio, setFechaInicio] = useState(new Date().toISOString().split('T')[0]);
   const [fechaFin, setFechaFin] = useState(new Date().toISOString().split('T')[0]);
   const [pdvs, setPdvs] = useState([]);
+  const [hiddenReponedores, setHiddenReponedores] = useState(new Set());
 
   // === RUTAS STATE ===
   const [routes, setRoutes] = useState([]);
@@ -293,6 +294,16 @@ export function MonitoreoRastreoView() {
     }
   };
 
+  const toggleVisibility = (id, e) => {
+    e.stopPropagation();
+    setHiddenReponedores(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
   const createMarkerIcon = (estado) => {
     let colorHex = '#ef4444'; // Red por defecto (desconectado)
     if (estado === 'activo') colorHex = '#10b981'; // Green (activo)
@@ -412,9 +423,18 @@ export function MonitoreoRastreoView() {
                           <Users className={isSelected ? "text-brand-blue" : "text-slate-400"} size={14} />
                           <h4 className="font-bold text-sm text-slate-800 dark:text-slate-100">{rep.nombre || `Reponedor #${rep.id_reponedor || rep.id}`}</h4>
                         </div>
-                        <div className="flex items-center gap-1.5">
-                          <span className={clsx("w-2 h-2 rounded-full ring-2", getStatusColor(rep.estado))}></span>
-                          <span className="text-[9px] font-bold text-slate-500 uppercase">{getStatusText(rep.estado)}</span>
+                        <div className="flex flex-col items-end gap-1 shrink-0">
+                          <div className="flex items-center gap-1.5">
+                            <span className={clsx("w-2 h-2 rounded-full ring-2", getStatusColor(rep.estado))}></span>
+                            <span className="text-[9px] font-bold text-slate-500 uppercase">{getStatusText(rep.estado)}</span>
+                          </div>
+                          <button 
+                            onClick={(e) => toggleVisibility(rep.id, e)}
+                            className="p-1 rounded hover:bg-slate-700/50 text-slate-400 hover:text-slate-200 transition-colors"
+                            title={hiddenReponedores.has(rep.id) ? "Mostrar en mapa" : "Ocultar del mapa"}
+                          >
+                            {hiddenReponedores.has(rep.id) ? <EyeOff size={12} /> : <Eye size={12} />}
+                          </button>
                         </div>
                       </div>
                       <div className="text-[10px] text-slate-500 dark:text-slate-400 mt-2">
@@ -499,6 +519,7 @@ export function MonitoreoRastreoView() {
             {/* CAPA 1: Reponedores en vivo */}
             {displayReponedores
               .filter(r => r.lat && r.lon)
+              .filter(r => !hiddenReponedores.has(r.id))
               .filter(r => viewMode === 'global' ? true : r.id === selectedRepId)
               .map((rep) => (
               <Marker key={`rep-${rep.id}`} position={[rep.lat, rep.lon]} icon={createMarkerIcon(rep.estado)}>
