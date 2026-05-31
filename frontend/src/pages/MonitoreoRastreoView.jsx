@@ -267,12 +267,12 @@ export function MonitoreoRastreoView() {
     if (isNaN(lastTime)) return 'desconectado';
     const now = new Date().getTime();
     const diffMinutes = (now - lastTime) / (1000 * 60);
-    return diffMinutes <= 2 ? 'activo' : 'desconectado';
+    return diffMinutes <= 1.5 ? 'activo' : 'desconectado';
   };
 
   const displayReponedores = reponedores.map((r) => ({
     ...r,
-    estado: r.online !== undefined ? (r.online ? 'activo' : 'desconectado') : calcularEstado(r.ultimo_update)
+    estado: calcularEstado(r.ultimo_update)
   })).sort((a, b) => {
     // 1. Activos primero
     if (a.estado === 'activo' && b.estado !== 'activo') return -1;
@@ -548,7 +548,7 @@ export function MonitoreoRastreoView() {
                     <p className="text-slate-500 mt-1">Estado: {getStatusText(rep.estado)}</p>
                     {rep.ultimo_update && rep.ultimo_update !== 'Nunca' && (
                       <p className="text-slate-500 mt-1 font-medium border-t border-slate-100 pt-1">
-                        Última conexión: {new Date(rep.ultimo_update).toLocaleString()}
+                        Última conexión: {new Date(rep.ultimo_update).toLocaleString('es-BO', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false })}
                       </p>
                     )}
                   </div>
@@ -564,7 +564,7 @@ export function MonitoreoRastreoView() {
                   <CircleMarker key={`hist-${idx}`} center={[punto.latitud, punto.longitud]} radius={4} pathOptions={{ color: '#2563eb', fillColor: 'white', fillOpacity: 1, weight: 2 }}>
                     <Popup>
                       <div className="font-sans text-xs">
-                        <p className="font-bold">Hora: {new Date(punto.timestamp || punto.creado_en).toLocaleString()}</p>
+                        <p className="font-bold">Hora: {new Date(punto.timestamp || punto.creado_en).toLocaleString('es-BO', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false })}</p>
                       </div>
                     </Popup>
                   </CircleMarker>
