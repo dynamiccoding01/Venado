@@ -294,7 +294,7 @@ export function MonitoreoRastreoView() {
     if (estado === 'activo') colorHex = '#10b981'; // Green (activo)
     if (estado === 'sin_señal') colorHex = '#f59e0b'; // Orange
 
-    const html = `<div style="background-color: ${colorHex}; width: 36px; height: 36px; border-radius: 50%; border: 3px solid white; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.2); display: flex; align-items: center; justify-content: center;">
+    const html = `<div style="background-color: ${colorHex}; width: 36px; height: 36px; border-radius: 50%; border: 3px solid white; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.2); display: flex; align-items: center; justify-content: center; z-index: 500;">
       <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 20px; height: 20px;">
         <rect x="1" y="3" width="15" height="13"></rect>
         <polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon>
@@ -303,6 +303,21 @@ export function MonitoreoRastreoView() {
       </svg>
     </div>`;
     return L.divIcon({ html, className: 'custom-rep-marker', iconSize: [36, 36], iconAnchor: [18, 18] });
+  };
+
+  const createPdvIcon = (prioridad) => {
+    let colorHex = '#3b82f6'; // Azul por defecto (media)
+    if (prioridad?.toLowerCase() === 'alta') colorHex = '#ef4444'; // Rojo
+    if (prioridad?.toLowerCase() === 'baja') colorHex = '#10b981'; // Verde
+
+    const html = `<div style="background-color: ${colorHex}; width: 28px; height: 28px; border-radius: 8px; border: 2px solid white; box-shadow: 0 2px 4px rgb(0 0 0 / 0.3); display: flex; align-items: center; justify-content: center;">
+      <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width: 14px; height: 14px;">
+        <path d="M3 9h18v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9Z"></path>
+        <path d="M3 9l2.45-4.9A2 2 0 0 1 7.24 3h9.52a2 2 0 0 1 1.8 1.1L21 9"></path>
+        <path d="M12 3v6"></path>
+      </svg>
+    </div>`;
+    return L.divIcon({ html, className: 'custom-pdv-marker', iconSize: [28, 28], iconAnchor: [14, 14] });
   };
 
   const getRouteStatusColor = (status) => {
@@ -466,9 +481,14 @@ export function MonitoreoRastreoView() {
             {/* CAPA 0: Todos los Puntos de Venta (PDVs) - Solo en Modo Global */}
             {viewMode === 'global' && pdvs.map(pdv => (
               pdv.latitud && pdv.longitud ? (
-                <CircleMarker key={`pdv-${pdv.id_pdv}`} center={[pdv.latitud, pdv.longitud]} radius={4} pathOptions={{ color: '#94a3b8', fillColor: '#cbd5e1', fillOpacity: 0.7, weight: 1 }}>
-                  <Popup><p className="font-bold text-xs">{pdv.nombre_pdv}</p></Popup>
-                </CircleMarker>
+                <Marker key={`pdv-${pdv.id_pdv}`} position={[pdv.latitud, pdv.longitud]} icon={createPdvIcon(pdv.prioridad)}>
+                  <Popup>
+                    <div className="font-sans text-xs">
+                      <p className="font-bold text-sm text-slate-800">{pdv.nombre_pdv}</p>
+                      <p className="text-slate-500 mt-1 uppercase text-[10px] font-bold">Prioridad: {pdv.prioridad || 'Media'}</p>
+                    </div>
+                  </Popup>
+                </Marker>
               ) : null
             ))}
 
@@ -512,13 +532,16 @@ export function MonitoreoRastreoView() {
                 {routeDetails?.ruta_puntos?.map((punto) => {
                   const pos = [punto.pdv.latitud, punto.pdv.longitud];
                   const isCompleted = punto.estado === 'completada';
-                  return isCompleted ? (
-                    <CircleMarker key={`pt-${punto.id_ruta_punto}`} center={pos} radius={6} fillColor={'#10b981'} color={'#059669'} weight={3} fillOpacity={1}>
-                      <Popup><p className="font-bold text-xs">{punto.pdv.nombre_pdv}</p></Popup>
-                    </CircleMarker>
-                  ) : (
-                    <Marker key={`pt-${punto.id_ruta_punto}`} position={pos} icon={redPinIcon}>
-                      <Popup><p className="font-bold text-xs">{punto.pdv.nombre_pdv}</p></Popup>
+                  return (
+                    <Marker key={`pt-${punto.id_ruta_punto}`} position={pos} icon={createPdvIcon(punto.pdv.prioridad)}>
+                      <Popup>
+                        <div className="font-sans text-xs">
+                          <p className="font-bold text-sm text-slate-800">{punto.pdv.nombre_pdv}</p>
+                          <p className={clsx("mt-1 uppercase text-[10px] font-bold", isCompleted ? "text-emerald-500" : "text-amber-500")}>
+                            Estado: {punto.estado.replace('_', ' ')}
+                          </p>
+                        </div>
+                      </Popup>
                     </Marker>
                   );
                 })}
