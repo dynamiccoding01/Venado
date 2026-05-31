@@ -3,6 +3,7 @@ import { Search, Bell, User, Settings, Moon, Sun, LogOut } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import clsx from 'clsx';
 import logo from '../../assets/logo.jpg';
+import DefaultAvatar from '../../assets/default-avatar.jpeg';
 import { useTheme } from '../../context/ThemeContext';
 import { API } from '../../api/client';
 
@@ -83,7 +84,7 @@ export function Header() {
               "w-11 h-11 rounded-xl overflow-hidden ring-2 shadow-lg transition-all duration-300",
               isProfileOpen ? "ring-brand-blue shadow-brand-blue/30 scale-105" : "ring-slate-200 dark:ring-dark-border group-hover:ring-brand-blue/50"
             )}>
-              <img src="https://ui-avatars.com/api/?name=Admin+Venado&background=3b82f6&color=fff&rounded=false" alt="Avatar" className="w-full h-full object-cover" />
+              <img src={DefaultAvatar} alt="Avatar" className="w-full h-full object-cover" />
             </div>
           </div>
 

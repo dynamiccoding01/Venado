@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { User, Mail, Shield, Briefcase, Calendar, MapPin, Building, Key } from 'lucide-react';
 import clsx from 'clsx';
+import DefaultAvatar from '../assets/default-avatar.jpeg';
 
 export function Profile() {
   const [userData, setUserData] = useState(null);
@@ -40,7 +41,7 @@ export function Profile() {
         <div className="flex flex-col md:flex-row items-center gap-6">
           <div className="w-32 h-32 rounded-3xl overflow-hidden ring-4 ring-brand-blue/20 shadow-xl shadow-brand-blue/10 relative group">
             <img 
-              src={`https://ui-avatars.com/api/?name=${encodeURIComponent(userData.nombre || 'Usuario')}&background=3b82f6&color=fff&size=256`} 
+              src={DefaultAvatar} 
               alt="Avatar" 
               className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
             />
