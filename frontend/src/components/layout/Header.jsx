@@ -91,9 +91,13 @@ export function Header() {
           {isProfileOpen && (
             <div className="absolute right-0 mt-4 w-64 glass-card rounded-2xl overflow-hidden z-50 animate-in fade-in slide-in-from-top-2 duration-200 border border-slate-200/50 dark:border-white/10 shadow-2xl">
               <div className="p-2 flex flex-col gap-1">
-                <button className="flex items-center gap-3 px-4 py-3 text-sm font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-dark-border rounded-xl transition-colors w-full text-left">
+                <Link 
+                  to="/profile"
+                  onClick={() => setIsProfileOpen(false)}
+                  className="flex items-center gap-3 px-4 py-3 text-sm font-medium text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-dark-border rounded-xl transition-colors w-full text-left"
+                >
                   <User size={18} className="text-slate-400" /> Mi perfil
-                </button>
+                </Link>
                 <Link 
                   to="/settings" 
                   onClick={() => setIsProfileOpen(false)}

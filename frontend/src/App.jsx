@@ -11,6 +11,7 @@ import { StaffAdmin } from './pages/StaffAdmin';
 import { Settings } from './pages/Settings';
 import { MercadosAdmin } from './pages/MercadosAdmin';
 import { CategoriasAdmin } from './pages/CategoriasAdmin';
+import { Profile } from './pages/Profile';
 import { ThemeProvider } from './context/ThemeContext';
 
 export default function App() {
@@ -58,6 +59,7 @@ export default function App() {
           <Route path="/monitoreo" element={<MonitoreoRastreoView />} />
           <Route path="/pdvs" element={<PDVAdmin />} />
           <Route path="/reports" element={<ReportsView />} />
+          <Route path="/profile" element={<Profile />} />
           
           {/* Rutas exclusivas para Administradores (id_rol = 1) */}
           <Route path="/staff" element={
