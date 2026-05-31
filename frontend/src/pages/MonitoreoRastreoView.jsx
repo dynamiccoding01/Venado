@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMap, Polyline, CircleMarker } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import { Users, Navigation, Radio, MapPin, Search, Route, Zap, Eye, EyeOff, ArrowLeft } from 'lucide-react';
+import { Users, Navigation, Radio, MapPin, Search, Route, Zap, Eye, EyeOff, ArrowLeft, Play, Pause, Square, FastForward } from 'lucide-react';
 import clsx from 'clsx';
 import { API } from '../api/client';
 import { useSearchParams } from 'react-router-dom';
@@ -57,6 +57,10 @@ export function MonitoreoRastreoView() {
   const [historialRuta, setHistorialRuta] = useState([]);
   const [fechaInicio, setFechaInicio] = useState(new Date().toISOString().split('T')[0]);
   const [fechaFin, setFechaFin] = useState(new Date().toISOString().split('T')[0]);
+
+  const [playbackState, setPlaybackState] = useState('stopped');
+  const [playbackIndex, setPlaybackIndex] = useState(0);
+  const [playbackSpeed, setPlaybackSpeed] = useState(1);
   const [pdvs, setPdvs] = useState([]);
   const [hiddenReponedores, setHiddenReponedores] = useState(new Set());
 
@@ -191,12 +195,50 @@ export function MonitoreoRastreoView() {
   useEffect(() => {
     if (selectedRepId && viewMode === 'historial') {
       API.getHistorialGps(selectedRepId, fechaInicio, fechaFin)
-        .then(data => setHistorialRuta(Array.isArray(data) ? data : []))
-        .catch(() => setHistorialRuta([]));
+        .then(data => {
+          const arr = Array.isArray(data) ? data : [];
+          setHistorialRuta(arr);
+          setPlaybackState('stopped');
+          setPlaybackIndex(0);
+          if (arr.length > 0 && arr[0].latitud && arr[0].longitud) {
+             setMapCenter([arr[0].latitud, arr[0].longitud]);
+             setMapUpdateKey(k => k + 1);
+          }
+        })
+        .catch(() => {
+          setHistorialRuta([]);
+          setPlaybackState('stopped');
+          setPlaybackIndex(0);
+        });
     } else {
       setHistorialRuta([]);
+      setPlaybackState('stopped');
+      setPlaybackIndex(0);
     }
   }, [selectedRepId, fechaInicio, fechaFin, viewMode]);
+
+  // Reproductor Animado de Historial
+  useEffect(() => {
+    let interval;
+    if (playbackState === 'playing' && historialRuta.length > 0) {
+      interval = setInterval(() => {
+        setPlaybackIndex((prev) => {
+          if (prev >= historialRuta.length - 1) {
+            setPlaybackState('stopped');
+            return 0;
+          }
+          const nextIndex = prev + 1;
+          const nextPoint = historialRuta[nextIndex];
+          if (nextPoint && nextPoint.latitud && nextPoint.longitud) {
+            setMapCenter([nextPoint.latitud, nextPoint.longitud]);
+            setMapUpdateKey(k => k + 1); // Seguir con la cámara
+          }
+          return nextIndex;
+        });
+      }, 1000 / playbackSpeed);
+    }
+    return () => clearInterval(interval);
+  }, [playbackState, playbackSpeed, historialRuta]);
 
   // Load Rutas Initial
   useEffect(() => {
@@ -346,6 +388,16 @@ export function MonitoreoRastreoView() {
     return L.divIcon({ html, className: 'custom-rep-marker', iconSize: [36, 36], iconAnchor: [18, 18] });
   };
 
+  const movingTruckIcon = useMemo(() => L.divIcon({
+    html: `<div class="relative flex items-center justify-center w-8 h-8">
+             <div class="absolute inset-0 bg-brand-blue rounded-full opacity-40 animate-ping"></div>
+             <div class="relative w-4 h-4 bg-brand-blue rounded-full border-2 border-white shadow-lg"></div>
+           </div>`,
+    className: 'custom-moving-icon',
+    iconSize: [32, 32],
+    iconAnchor: [16, 16]
+  }), []);
+
   const createPdvIcon = (prioridad) => {
     let colorHex = '#3b82f6'; // Azul por defecto (media)
     if (prioridad?.toLowerCase() === 'alta') colorHex = '#ef4444'; // Rojo
@@ -441,6 +493,43 @@ export function MonitoreoRastreoView() {
                         <input type="date" value={fechaFin} onChange={(e) => setFechaFin(e.target.value)} className="w-full px-2 py-1.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 rounded-md text-xs focus:ring-1 focus:ring-brand-blue outline-none transition-colors" />
                       </div>
                     </div>
+
+                    {historialRuta.length > 0 && (
+                      <div className="mt-4 bg-slate-100 dark:bg-slate-900/50 p-3 rounded-xl border border-slate-200 dark:border-slate-700">
+                        <div className="flex items-center justify-between mb-3">
+                          <div className="flex gap-2">
+                            {playbackState === 'playing' ? (
+                              <button onClick={() => setPlaybackState('paused')} className="p-2 bg-amber-500 text-white rounded-lg hover:bg-amber-600 transition-colors shadow-sm" title="Pausar"><Pause size={16}/></button>
+                            ) : (
+                              <button onClick={() => setPlaybackState('playing')} className="p-2 bg-brand-blue text-white rounded-lg hover:bg-blue-600 transition-colors shadow-sm" title="Reproducir"><Play size={16}/></button>
+                            )}
+                            <button onClick={() => { setPlaybackState('stopped'); setPlaybackIndex(0); }} className="p-2 bg-slate-500 text-white rounded-lg hover:bg-slate-600 transition-colors shadow-sm" title="Detener"><Square size={16}/></button>
+                            <button onClick={() => setPlaybackSpeed(s => s >= 8 ? 1 : s * 2)} className="p-2 bg-slate-700 text-white rounded-lg hover:bg-slate-800 flex items-center gap-1 text-xs font-bold transition-colors shadow-sm w-12 justify-center" title="Velocidad">
+                              x{playbackSpeed}
+                            </button>
+                          </div>
+                          <span className="text-xs font-mono font-bold text-slate-500 bg-white dark:bg-slate-800 px-2 py-1 rounded border border-slate-200 dark:border-slate-700">
+                            {playbackIndex + 1} / {historialRuta.length}
+                          </span>
+                        </div>
+                        <input 
+                          type="range" 
+                          min="0" 
+                          max={Math.max(0, historialRuta.length - 1)} 
+                          value={playbackIndex} 
+                          onChange={(e) => {
+                            const val = Number(e.target.value);
+                            setPlaybackIndex(val);
+                            const pt = historialRuta[val];
+                            if (pt && pt.latitud && pt.longitud) {
+                              setMapCenter([pt.latitud, pt.longitud]);
+                              setMapUpdateKey(k => k + 1);
+                            }
+                          }} 
+                          className="w-full h-2 bg-slate-300 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer accent-brand-blue" 
+                        />
+                      </div>
+                    )}
                   </div>
                 ) : (
                   <div className="relative animate-in fade-in">
@@ -573,8 +662,24 @@ export function MonitoreoRastreoView() {
               </Marker>
             ))}
 
-            {/* CAPA 2: Historial GPS del Reponedor Seleccionado */}
-            {viewMode === 'historial' && historialRuta.length > 0 && (
+            {/* Historial de Rutas - Reproductor Animado */}
+            {viewMode === 'historial' && historialRuta.length > 0 && playbackState !== 'stopped' && historialRuta[playbackIndex] && (
+              <>
+                <Polyline positions={historialRuta.slice(0, playbackIndex + 1).filter(p => p.latitud && p.longitud).map(p => [p.latitud, p.longitud])} color="#3b82f6" weight={4} opacity={0.8} />
+                
+                <Marker position={[historialRuta[playbackIndex].latitud, historialRuta[playbackIndex].longitud]} icon={movingTruckIcon}>
+                  <Popup>
+                    <div className="font-sans text-xs font-bold text-slate-800 text-center">
+                      <p className="text-brand-blue mb-1">En tránsito...</p>
+                      {new Date(historialRuta[playbackIndex].timestamp || historialRuta[playbackIndex].creado_en).toLocaleString('es-BO', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false })}
+                    </div>
+                  </Popup>
+                </Marker>
+              </>
+            )}
+
+            {/* Historial de Rutas - Modo Estático Completo */}
+            {viewMode === 'historial' && historialRuta.length > 0 && playbackState === 'stopped' && (
               <>
                 <Polyline positions={historialRuta.filter(p => p.latitud && p.longitud).map(p => [p.latitud, p.longitud])} color="#3b82f6" weight={3} opacity={0.8} dashArray="10, 10" />
                 {historialRuta.filter(p => p.latitud && p.longitud).map((punto, idx) => (
