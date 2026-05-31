@@ -61,7 +61,7 @@ export function MonitoreoRastreoView() {
   useEffect(() => {
     Promise.all([
       API.getUsuarios().catch(() => []),
-      API.getPosicionesGps().catch(() => []),
+      API.getUltimasUbicaciones().catch(() => []),
       API.getPdvs().catch(() => [])
     ]).then(([usuarios, gpsData, pdvData]) => {
       
@@ -79,11 +79,13 @@ export function MonitoreoRastreoView() {
       if (Array.isArray(gpsData)) {
         const gpsMap = new Map();
         gpsData.forEach(pos => {
-          const id = pos.id_reponedor || pos.id;
-          const ultimo_update = pos.timestamp || pos.creado_en || new Date().toISOString();
+          const id = pos.id_usuario || pos.id_reponedor || pos.id;
+          const ultimo_update = pos.ultima_conexion || pos.timestamp || pos.creado_en || new Date().toISOString();
           gpsMap.set(id, {
-            lat: pos.latitud || pos.lat, lon: pos.longitud || pos.lon,
-            ultimo_update, pdv_actual: pos.pdv_actual || ''
+            lat: pos.lat_actual || pos.latitud || pos.lat, 
+            lon: pos.lon_actual || pos.longitud || pos.lon,
+            ultimo_update, 
+            pdv_actual: pos.pdv_actual || ''
           });
         });
         initialReponedores = initialReponedores.map(rep => gpsMap.has(rep.id) ? { ...rep, ...gpsMap.get(rep.id) } : rep);
@@ -130,7 +132,7 @@ export function MonitoreoRastreoView() {
   useEffect(() => {
     const fetchGpsUpdate = async () => {
       try {
-        const gpsData = await API.getPosicionesGps();
+        const gpsData = await API.getUltimasUbicaciones();
         if (Array.isArray(gpsData)) {
           setReponedores(prev => {
             if (prev.length === 0) return prev;
@@ -138,12 +140,12 @@ export function MonitoreoRastreoView() {
             let hasChanges = false;
             
             gpsData.forEach(pos => {
-              const id = pos.id_reponedor || pos.id;
+              const id = pos.id_usuario || pos.id_reponedor || pos.id;
               if (prevMap.has(id)) {
                 const current = prevMap.get(id);
-                const newLat = pos.latitud || pos.lat;
-                const newLon = pos.longitud || pos.lon;
-                const newUpdate = pos.timestamp || pos.creado_en || new Date().toISOString();
+                const newLat = pos.lat_actual || pos.latitud || pos.lat;
+                const newLon = pos.lon_actual || pos.longitud || pos.lon;
+                const newUpdate = pos.ultima_conexion || pos.timestamp || pos.creado_en || new Date().toISOString();
                 
                 // Solo actualizar si la posición realmente cambió
                 if (current.lat !== newLat || current.lon !== newLon) {
@@ -502,6 +504,11 @@ export function MonitoreoRastreoView() {
                   <div className="font-sans text-xs">
                     <p className="font-bold text-sm text-slate-800">{rep.nombre || `Reponedor #${rep.id_reponedor || rep.id}`}</p>
                     <p className="text-slate-500 mt-1">Estado: {getStatusText(rep.estado)}</p>
+                    {rep.ultimo_update && rep.ultimo_update !== 'Nunca' && (
+                      <p className="text-slate-500 mt-1 font-medium border-t border-slate-100 pt-1">
+                        Última vez: {new Date(rep.ultimo_update).toLocaleString()}
+                      </p>
+                    )}
                   </div>
                 </Popup>
               </Marker>
