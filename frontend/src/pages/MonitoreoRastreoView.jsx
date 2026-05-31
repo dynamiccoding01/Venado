@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, useMap, Polyline, CircleMarker } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import { Users, Navigation, Radio, MapPin, Search, Route, Zap, Eye, EyeOff } from 'lucide-react';
+import { Users, Navigation, Radio, MapPin, Search, Route, Zap, Eye, EyeOff, ArrowLeft } from 'lucide-react';
 import clsx from 'clsx';
 import { API } from '../api/client';
 import { useSearchParams } from 'react-router-dom';
@@ -289,11 +289,14 @@ export function MonitoreoRastreoView() {
     return nameA.localeCompare(nameB);
   });
 
-  const filteredReponedores = displayReponedores.filter(r => 
-    r.nombre?.toLowerCase().includes(searchQueryRep.toLowerCase()) ||
-    r.id?.toString().includes(searchQueryRep.toLowerCase()) ||
-    r.estado?.toLowerCase().includes(searchQueryRep.toLowerCase())
-  );
+  const filteredReponedores = displayReponedores.filter(r => {
+    if (viewMode === 'historial' && selectedRepId) {
+      return r.id === selectedRepId;
+    }
+    return r.nombre?.toLowerCase().includes(searchQueryRep.toLowerCase()) ||
+           r.id?.toString().includes(searchQueryRep.toLowerCase()) ||
+           r.estado?.toLowerCase().includes(searchQueryRep.toLowerCase());
+  });
 
   const filteredRoutes = routes.filter(route => 
     route.id_reponedor?.toString().includes(searchQueryRoute) ||
@@ -420,20 +423,29 @@ export function MonitoreoRastreoView() {
           {activeTab === 'reponedores' && (
             <>
               <div className="p-4 border-b border-slate-200 dark:border-dark-border bg-slate-50/50 dark:bg-slate-800/30">
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
-                  <input type="text" value={searchQueryRep} onChange={(e) => setSearchQueryRep(e.target.value)} placeholder="Buscar reponedor..." className="w-full pl-9 pr-3 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 rounded-lg text-sm focus:ring-1 focus:ring-brand-blue outline-none transition-colors" />
-                </div>
-                {viewMode === 'historial' && (
-                  <div className="mt-3 grid grid-cols-2 gap-2 animate-in fade-in slide-in-from-top-2">
-                    <div>
-                      <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">F. Inicial</label>
-                      <input type="date" value={fechaInicio} onChange={(e) => setFechaInicio(e.target.value)} className="w-full px-2 py-1.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 rounded-md text-xs focus:ring-1 focus:ring-brand-blue outline-none transition-colors" />
+                {viewMode === 'historial' ? (
+                  <div className="animate-in fade-in slide-in-from-top-2">
+                    <button 
+                      onClick={() => { setViewMode('global'); setHistorialRuta([]); }}
+                      className="mb-4 flex items-center gap-2 text-sm font-bold text-slate-500 hover:text-brand-blue transition-colors"
+                    >
+                      <ArrowLeft size={16} /> Volver a todos
+                    </button>
+                    <div className="grid grid-cols-2 gap-2">
+                      <div>
+                        <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">F. Inicial</label>
+                        <input type="date" value={fechaInicio} onChange={(e) => setFechaInicio(e.target.value)} className="w-full px-2 py-1.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 rounded-md text-xs focus:ring-1 focus:ring-brand-blue outline-none transition-colors" />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">F. Final</label>
+                        <input type="date" value={fechaFin} onChange={(e) => setFechaFin(e.target.value)} className="w-full px-2 py-1.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 rounded-md text-xs focus:ring-1 focus:ring-brand-blue outline-none transition-colors" />
+                      </div>
                     </div>
-                    <div>
-                      <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">F. Final</label>
-                      <input type="date" value={fechaFin} onChange={(e) => setFechaFin(e.target.value)} className="w-full px-2 py-1.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 rounded-md text-xs focus:ring-1 focus:ring-brand-blue outline-none transition-colors" />
-                    </div>
+                  </div>
+                ) : (
+                  <div className="relative animate-in fade-in">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
+                    <input type="text" value={searchQueryRep} onChange={(e) => setSearchQueryRep(e.target.value)} placeholder="Buscar reponedor..." className="w-full pl-9 pr-3 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 rounded-lg text-sm focus:ring-1 focus:ring-brand-blue outline-none transition-colors" />
                   </div>
                 )}
               </div>

@@ -129,29 +129,23 @@ export const API = {
     return apiFetch('/usuarios/reponedores/ultimas-ubicaciones');
   },
   getHistorialGps: async (id_usuario, fechaInicio, fechaFin) => {
-    if (!fechaFin || fechaInicio === fechaFin) {
-      return apiFetch(`/usuarios/${id_usuario}/gps?fecha=${fechaInicio}`);
+    let url = `/usuarios/${id_usuario}/gps`;
+    
+    // Si se proveen fechas, se añaden los query parameters correspondientes.
+    if (fechaInicio && fechaFin) {
+      url += `?fecha_inicio=${fechaInicio}&fecha_fin=${fechaFin}`;
+    } else if (fechaInicio) {
+      url += `?fecha_inicio=${fechaInicio}`;
     }
     
-    const results = [];
-    let currentStr = fechaInicio;
-    
-    while (currentStr <= fechaFin) {
-      try {
-        const data = await apiFetch(`/usuarios/${id_usuario}/gps?fecha=${currentStr}`);
-        if (Array.isArray(data)) {
-          results.push(...data);
-        }
-      } catch (e) {
-        console.warn(`Error al consultar GPS para ${currentStr}`, e);
-      }
-      
-      const d = new Date(currentStr + 'T12:00:00Z');
-      d.setDate(d.getDate() + 1);
-      currentStr = d.toISOString().split('T')[0];
+    try {
+      const data = await apiFetch(url);
+      const result = Array.isArray(data) ? data : [];
+      return result.sort((a, b) => new Date(a.timestamp || a.creado_en) - new Date(b.timestamp || b.creado_en));
+    } catch (e) {
+      console.warn(`Error al consultar historial GPS`, e);
+      return [];
     }
-    
-    return results.sort((a, b) => new Date(a.timestamp || a.creado_en) - new Date(b.timestamp || b.creado_en));
   },
 
   // Categorías
