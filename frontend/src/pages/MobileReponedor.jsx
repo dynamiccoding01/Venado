@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { MapPin, Navigation, Camera, CheckCircle, Clock, ChevronLeft, Package, User, CloudRain } from 'lucide-react';
+import { MapPin, Navigation, Camera, CheckCircle, Clock, ChevronLeft, Package, User, CloudRain, Plus, Minus } from 'lucide-react';
 import clsx from 'clsx';
 import { API, createWebSocket } from '../api/client';
 
@@ -9,6 +9,11 @@ export function MobileReponedor() {
   const [isCheckedIn, setIsCheckedIn] = useState(false);
   const [currentTask, setCurrentTask] = useState('inventory'); // inventory, photos, signature
   const [clima, setClima] = useState(null);
+
+  // Inventario y Entregas Móvil
+  const [productos, setProductos] = useState([]);
+  const [entregasForm, setEntregasForm] = useState({});
+  const [isSubmittingEntrega, setIsSubmittingEntrega] = useState(false);
 
   // Encontrar el actual o próximo pendiente
   const activePdvIndex = routeTasks.findIndex(t => t.estado === 'pendiente' || t.estado === 'en_progreso');
@@ -32,6 +37,9 @@ export function MobileReponedor() {
 
     // 2. Fetch Clima (La Paz)
     API.getClima(-16.5, -68.15).then(setClima).catch(console.error);
+
+    // Fetch Productos para catálogo móvil
+    API.getProductos().then(setProductos).catch(console.error);
   }, []);
 
   useEffect(() => {
@@ -57,6 +65,46 @@ export function MobileReponedor() {
       ws.close();
     };
   }, [activePdv]);
+
+  const handleQuantityChange = (id_producto, delta) => {
+    setEntregasForm(prev => {
+      const current = prev[id_producto] || 0;
+      const next = Math.max(0, current + delta);
+      if (next === 0) {
+        const copy = {...prev};
+        delete copy[id_producto];
+        return copy;
+      }
+      return { ...prev, [id_producto]: next };
+    });
+  };
+
+  const handleSubmitEntregaMovil = async () => {
+    const ids = Object.keys(entregasForm);
+    if (ids.length === 0) return alert("Agrega al menos un producto");
+    setIsSubmittingEntrega(true);
+    try {
+      const payload = {
+        id_visita: activePdv?.id_ruta_punto || 1, 
+        id_reponedor: 5, // ID simulado
+        id_pdv: activePdv?.id_pdv || 1,
+        notas: "Entrega registrada desde App Móvil",
+        productos: ids.map(id => ({
+          id_producto: parseInt(id),
+          cantidad_entregada: entregasForm[id]
+        }))
+      };
+      await API.registrarEntrega(payload);
+      alert("¡Entrega exitosa! Stock descontado.");
+      setEntregasForm({});
+      API.getProductos().then(setProductos).catch(console.error);
+      setCurrentTask('photos');
+    } catch (e) {
+      alert("Error al registrar entrega. Verifica tu stock o conexión.");
+    } finally {
+      setIsSubmittingEntrega(false);
+    }
+  };
 
   const handleFinishVisit = async () => {
     if (!activePdv) return;
@@ -158,22 +206,50 @@ export function MobileReponedor() {
                 
                 {/* Tareas Activas */}
                 <div className="mt-5 flex flex-col gap-3.5">
-                  <button 
-                    onClick={() => setCurrentTask('inventory')}
-                    className={clsx(
-                      "flex items-center justify-between p-3.5 rounded-2xl border-2 transition-all duration-300",
-                      currentTask === 'inventory' ? "bg-brand-blue/5 border-brand-blue" : "bg-slate-50 dark:bg-dark-bg border-slate-200 dark:border-white/5 hover:border-brand-blue/50"
-                    )}
-                  >
-                    <div className="flex items-center gap-4">
-                      <div className={clsx("p-2.5 rounded-xl transition-colors", currentTask === 'inventory' ? "bg-brand-blue text-white shadow-md shadow-brand-blue/20" : "bg-white dark:bg-dark-card text-slate-400 dark:text-slate-500 shadow-sm")}>
-                        <Package size={18} />
+                  <div className={clsx("rounded-2xl border-2 transition-all duration-300", currentTask === 'inventory' ? "bg-white dark:bg-dark-bg border-brand-blue" : "bg-slate-50 dark:bg-dark-bg border-slate-200 dark:border-white/5 hover:border-brand-blue/50")}>
+                    <button 
+                      onClick={() => setCurrentTask('inventory')}
+                      className="w-full flex items-center justify-between p-3.5"
+                    >
+                      <div className="flex items-center gap-4">
+                        <div className={clsx("p-2.5 rounded-xl transition-colors", currentTask === 'inventory' ? "bg-brand-blue text-white shadow-md shadow-brand-blue/20" : "bg-white dark:bg-dark-card text-slate-400 dark:text-slate-500 shadow-sm")}>
+                          <Package size={18} />
+                        </div>
+                        <span className={clsx("font-bold text-sm", currentTask === 'inventory' ? "text-brand-blue" : "text-slate-600 dark:text-slate-300")}>Entregas de Stock</span>
                       </div>
-                      <span className={clsx("font-bold text-sm", currentTask === 'inventory' ? "text-brand-blue" : "text-slate-600 dark:text-slate-300")}>Conteo de Stock</span>
-                    </div>
-                    {currentTask !== 'inventory' && <div className="w-5 h-5 rounded-full border-2 border-slate-300 dark:border-slate-600"></div>}
-                    {currentTask === 'inventory' && <div className="w-5 h-5 rounded-full border-[5px] border-brand-blue bg-white"></div>}
-                  </button>
+                      {currentTask !== 'inventory' && <div className="w-5 h-5 rounded-full border-2 border-slate-300 dark:border-slate-600"></div>}
+                      {currentTask === 'inventory' && <div className="w-5 h-5 rounded-full border-[5px] border-brand-blue bg-white"></div>}
+                    </button>
+                    
+                    {currentTask === 'inventory' && (
+                      <div className="px-3.5 pb-4 animate-in fade-in slide-in-from-top-2">
+                        <div className="h-[200px] overflow-y-auto pr-1 space-y-2 mb-3">
+                          {productos.length === 0 ? (
+                            <p className="text-xs text-center text-slate-500">Cargando catálogo...</p>
+                          ) : productos.map(p => (
+                            <div key={p.id_producto} className="flex items-center justify-between bg-slate-50 dark:bg-dark-card p-2 rounded-xl border border-slate-200 dark:border-slate-700">
+                              <div className="flex-1">
+                                <p className="text-xs font-bold text-slate-800 dark:text-slate-200 line-clamp-1">{p.nombre_producto}</p>
+                                <p className="text-[10px] text-slate-500 font-medium">Stock Disp: <span className={p.stock_actual > 0 ? "text-emerald-500 font-bold" : "text-red-500 font-bold"}>{p.stock_actual}</span></p>
+                              </div>
+                              <div className="flex items-center gap-2 bg-white dark:bg-slate-800 p-1 rounded-lg border border-slate-200 dark:border-slate-600 shadow-sm">
+                                <button onClick={() => handleQuantityChange(p.id_producto, -1)} className="w-6 h-6 flex items-center justify-center bg-slate-100 dark:bg-slate-700 rounded text-slate-600 dark:text-slate-300 active:scale-95 transition-transform"><Minus size={14}/></button>
+                                <span className="text-xs font-bold w-4 text-center">{entregasForm[p.id_producto] || 0}</span>
+                                <button onClick={() => handleQuantityChange(p.id_producto, 1)} className="w-6 h-6 flex items-center justify-center bg-brand-blue text-white rounded shadow-sm shadow-brand-blue/30 active:scale-95 transition-transform"><Plus size={14}/></button>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                        <button 
+                          onClick={handleSubmitEntregaMovil} 
+                          disabled={isSubmittingEntrega || Object.keys(entregasForm).length === 0}
+                          className="w-full bg-brand-blue hover:bg-blue-600 text-white py-2.5 rounded-xl font-bold text-xs shadow-md disabled:opacity-50 active:scale-95 transition-transform flex justify-center gap-2"
+                        >
+                          {isSubmittingEntrega ? "Guardando..." : "Confirmar Entrega"}
+                        </button>
+                      </div>
+                    )}
+                  </div>
 
                   <button 
                     onClick={() => setCurrentTask('photos')}
