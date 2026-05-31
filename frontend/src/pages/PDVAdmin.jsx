@@ -179,6 +179,13 @@ export function PDVAdmin() {
 
   const handleSavePdv = async (e) => {
     e.preventDefault();
+
+    // Validación manual porque los campos están en diferentes pestañas
+    if (!newPdv.nombre_pdv || !newPdv.id_mercado || !newPdv.id_categoria || !newPdv.direccion || !newPdv.latitud || !newPdv.longitud) {
+      alert("⚠️ Faltan campos obligatorios.\\n\\nPor favor revisa que el Nombre, Mercado, Categoría, Dirección y Ubicación (Latitud/Longitud) estén llenos en sus respectivas pestañas.");
+      return;
+    }
+
     try {
       const payload = {
         ...newPdv,
@@ -410,7 +417,7 @@ export function PDVAdmin() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="md:col-span-2">
                     <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1">Nombre del Local / Razón Social <span className="text-red-500">*</span></label>
-                    <input type="text" required value={newPdv.nombre_pdv} onChange={e => setNewPdv({...newPdv, nombre_pdv: e.target.value})} className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-white rounded-lg text-sm outline-none focus:ring-1 focus:ring-brand-blue" />
+                    <input type="text" value={newPdv.nombre_pdv} onChange={e => setNewPdv({...newPdv, nombre_pdv: e.target.value})} className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-white rounded-lg text-sm outline-none focus:ring-1 focus:ring-brand-blue" />
                   </div>
                   <div>
                     <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1">Código GV (Autogenerado si vacío)</label>
@@ -422,14 +429,14 @@ export function PDVAdmin() {
                   </div>
                   <div>
                     <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1">Mercado / Zona <span className="text-red-500">*</span></label>
-                    <select required value={newPdv.id_mercado} onChange={e => setNewPdv({...newPdv, id_mercado: e.target.value})} className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-white rounded-lg text-sm outline-none">
+                    <select value={newPdv.id_mercado} onChange={e => setNewPdv({...newPdv, id_mercado: e.target.value})} className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-white rounded-lg text-sm outline-none">
                       <option value="">Seleccione...</option>
                       {mercados.map(m => <option key={m.id_mercado} value={m.id_mercado}>{m.nombre}</option>)}
                     </select>
                   </div>
                   <div>
                     <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1">Categoría <span className="text-red-500">*</span></label>
-                    <select required value={newPdv.id_categoria} onChange={e => setNewPdv({...newPdv, id_categoria: e.target.value})} className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-white rounded-lg text-sm outline-none">
+                    <select value={newPdv.id_categoria} onChange={e => setNewPdv({...newPdv, id_categoria: e.target.value})} className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-white rounded-lg text-sm outline-none">
                       <option value="">Seleccione...</option>
                       {categorias.map(c => <option key={c.id_categoria} value={c.id_categoria}>{c.nombre}</option>)}
                     </select>
@@ -455,7 +462,7 @@ export function PDVAdmin() {
              <div className={clsx("space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-300", activeTab !== 'ubicacion' && "hidden")}>
                 <div className="md:col-span-2">
                   <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1">Dirección Exacta o Referencia <span className="text-red-500">*</span></label>
-                  <input type="text" required value={newPdv.direccion} onChange={e => setNewPdv({...newPdv, direccion: e.target.value})} className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-white rounded-lg text-sm outline-none focus:ring-1 focus:ring-brand-blue" />
+                  <input type="text" value={newPdv.direccion} onChange={e => setNewPdv({...newPdv, direccion: e.target.value})} className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-white rounded-lg text-sm outline-none focus:ring-1 focus:ring-brand-blue" />
                 </div>
                 
                 <div className="flex gap-4 items-end mb-2">
@@ -464,12 +471,12 @@ export function PDVAdmin() {
                     <input type="text" value={newPdv.gmaps_url} onChange={(e) => handleUrlChange(e.target.value)} placeholder="https://www.google.com/maps/@-16.5,-68.1,15z" className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-white rounded-lg text-sm outline-none" />
                   </div>
                   <div className="w-32">
-                    <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">Latitud</label>
-                    <input type="number" step="any" required value={newPdv.latitud} onChange={e => setNewPdv({...newPdv, latitud: e.target.value})} className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-white rounded-lg text-sm outline-none" />
+                    <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">Latitud <span className="text-red-500">*</span></label>
+                    <input type="number" step="any" value={newPdv.latitud} onChange={e => setNewPdv({...newPdv, latitud: e.target.value})} className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-white rounded-lg text-sm outline-none" />
                   </div>
                   <div className="w-32">
-                    <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">Longitud</label>
-                    <input type="number" step="any" required value={newPdv.longitud} onChange={e => setNewPdv({...newPdv, longitud: e.target.value})} className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-white rounded-lg text-sm outline-none" />
+                    <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">Longitud <span className="text-red-500">*</span></label>
+                    <input type="number" step="any" value={newPdv.longitud} onChange={e => setNewPdv({...newPdv, longitud: e.target.value})} className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-white rounded-lg text-sm outline-none" />
                   </div>
                 </div>
 
@@ -577,7 +584,7 @@ export function PDVAdmin() {
           {/* Footer del Formulario */}
           <div className="px-6 py-4 border-t border-slate-200 dark:border-slate-700 flex justify-end gap-3 shrink-0 bg-slate-50 dark:bg-slate-800/30">
             <button type="button" onClick={() => setIsModalOpen(false)} className="px-4 py-2 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors">Cancelar</button>
-            <button type="submit" disabled={!newPdv.latitud || !newPdv.id_mercado || !newPdv.id_categoria || !newPdv.nombre_pdv || !newPdv.direccion} className="px-5 py-2 bg-brand-blue text-white hover:bg-brand-blue-hover rounded-lg text-sm font-bold flex items-center gap-2 transition-all disabled:opacity-50 disabled:cursor-not-allowed">
+            <button type="submit" className="px-5 py-2 bg-brand-blue text-white hover:bg-brand-blue-hover rounded-lg text-sm font-bold flex items-center gap-2 transition-all">
               <Save size={16} /> {editMode ? 'Guardar Cambios' : 'Registrar PDV'}
             </button>
           </div>
