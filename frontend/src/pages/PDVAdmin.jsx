@@ -482,10 +482,12 @@ export function PDVAdmin() {
 
                 <div className="h-64 w-full bg-slate-100 dark:bg-slate-800 rounded-lg overflow-hidden border border-slate-300 dark:border-slate-600 relative z-0">
                   <p className="absolute top-2 left-2 z-[400] bg-white/90 dark:bg-slate-800/90 text-slate-800 dark:text-slate-200 px-2 py-1 text-[10px] font-bold rounded shadow pointer-events-none">Haz clic en el mapa para ajustar el pin</p>
-                  <MapContainer center={newPdv.latitud && newPdv.longitud ? [parseFloat(newPdv.latitud), parseFloat(newPdv.longitud)] : [-16.5, -68.15]} zoom={14} className="w-full h-full">
-                    <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
-                    <LocationPicker lat={newPdv.latitud} lng={newPdv.longitud} setLocation={(lat, lng) => setNewPdv({...newPdv, latitud: lat, longitud: lng})} />
-                  </MapContainer>
+                  {activeTab === 'ubicacion' && (
+                    <MapContainer center={newPdv.latitud && newPdv.longitud ? [parseFloat(newPdv.latitud), parseFloat(newPdv.longitud)] : [-16.5, -68.15]} zoom={14} className="w-full h-full">
+                      <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+                      <LocationPicker lat={newPdv.latitud} lng={newPdv.longitud} setLocation={(lat, lng) => setNewPdv({...newPdv, latitud: lat, longitud: lng})} />
+                    </MapContainer>
+                  )}
                 </div>
              </div>
 
