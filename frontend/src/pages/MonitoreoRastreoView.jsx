@@ -168,15 +168,14 @@ export function MonitoreoRastreoView() {
                 const newUpdate = pos.ultima_conexion || pos.timestamp || pos.creado_en || 'Nunca';
                 const newOnline = pos.online;
                 
-                // Actualizar si cambió posición o estado
-                if (current.lat !== newLat || current.lon !== newLon || current.online !== newOnline || current.ultimo_update !== newUpdate) {
-                  prevMap.set(id, { ...current, lat: newLat, lon: newLon, ultimo_update: newUpdate, online: newOnline, pdv_actual: pos.pdv_actual || '' });
-                  hasChanges = true;
-                }
+                // Actualizar siempre las propiedades, aunque sean iguales, para forzar que el componente
+                // evalúe el tiempo actual (new Date().getTime()) en calcularEstado
+                prevMap.set(id, { ...current, lat: newLat, lon: newLon, ultimo_update: newUpdate, online: newOnline, pdv_actual: pos.pdv_actual || '' });
               }
             });
             
-            return hasChanges ? Array.from(prevMap.values()) : prev;
+            // Retornamos SIEMPRE un nuevo arreglo para forzar un re-render y que se recalcule el estado "En línea"
+            return Array.from(prevMap.values());
           });
         }
       } catch (e) {
@@ -184,7 +183,7 @@ export function MonitoreoRastreoView() {
       }
     };
 
-    const interval = setInterval(fetchGpsUpdate, 10000);
+    const interval = setInterval(fetchGpsUpdate, 60000); // 1 minuto
     return () => clearInterval(interval);
   }, []);
 
