@@ -720,6 +720,11 @@ export function MonitoreoRastreoView() {
                           )}>
                             Estado: {punto.estado.replace('_', ' ')}
                           </p>
+                          {isCompleted && punto.duracion_real_min != null && (
+                            <p className="mt-1 text-[10px] font-medium text-slate-500">
+                              Duración real: <span className="font-bold text-slate-700">{punto.duracion_real_min} min</span>
+                            </p>
+                          )}
                         </div>
                       </Popup>
                     </Marker>
