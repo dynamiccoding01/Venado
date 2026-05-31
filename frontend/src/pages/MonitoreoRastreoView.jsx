@@ -100,7 +100,7 @@ export function MonitoreoRastreoView() {
         const gpsMap = new Map();
         gpsData.forEach(pos => {
           const id = pos.id_usuario || pos.id_reponedor || pos.id;
-          const ultimo_update = pos.ultima_conexion || pos.timestamp || pos.creado_en || new Date().toISOString();
+          const ultimo_update = pos.ultima_conexion || pos.timestamp || pos.creado_en || 'Nunca';
           gpsMap.set(id, {
             lat: pos.lat_actual || pos.latitud || pos.lat, 
             lon: pos.lon_actual || pos.longitud || pos.lon,
@@ -136,8 +136,7 @@ export function MonitoreoRastreoView() {
         const data = JSON.parse(event.data);
         if (data.reponedores && Array.isArray(data.reponedores)) {
           setReponedores(prev => {
-            const now = new Date().toISOString();
-            const incomingMap = new Map(data.reponedores.map(r => [r.id || r.id_reponedor, { ...r, ultimo_update: r.ultimo_update || now }]));
+            const incomingMap = new Map(data.reponedores.map(r => [r.id || r.id_reponedor, { ...r, ultimo_update: r.ultimo_update || 'Nunca' }]));
             const updated = prev.map(p => incomingMap.has(p.id) ? { ...p, ...incomingMap.get(p.id) } : p);
             return updated;
           });
@@ -166,7 +165,7 @@ export function MonitoreoRastreoView() {
                 const current = prevMap.get(id);
                 const newLat = pos.lat_actual || pos.latitud || pos.lat;
                 const newLon = pos.lon_actual || pos.longitud || pos.lon;
-                const newUpdate = pos.ultima_conexion || pos.timestamp || pos.creado_en || new Date().toISOString();
+                const newUpdate = pos.ultima_conexion || pos.timestamp || pos.creado_en || 'Nunca';
                 const newOnline = pos.online;
                 
                 // Actualizar si cambió posición o estado
