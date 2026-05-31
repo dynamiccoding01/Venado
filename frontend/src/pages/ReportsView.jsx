@@ -1,13 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { Calendar, Download, TrendingUp, Users, Clock, CheckCircle, BarChart3 } from 'lucide-react';
-import { API } from '../api/client';
+import { Calendar, Download, TrendingUp, AlertTriangle, Clock, Route, ShieldAlert, Sparkles } from 'lucide-react';
+import { 
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, Legend, ResponsiveContainer,
+  AreaChart, Area, PieChart, Pie, Cell
+} from 'recharts';
 import clsx from 'clsx';
 
 export function ReportsView() {
   const [fecha, setFecha] = useState(new Date().toISOString().split('T')[0]);
-  const [metricas, setMetricas] = useState(null);
-  const [kpis, setKpis] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [data, setData] = useState(null);
 
   useEffect(() => {
     loadReports();
@@ -15,93 +17,129 @@ export function ReportsView() {
 
   const loadReports = async () => {
     setIsLoading(true);
-    try {
-      // Simulación de delay de red
-      await new Promise(resolve => setTimeout(resolve, 600));
+    // Simular llamada a API
+    await new Promise(resolve => setTimeout(resolve, 800));
 
-      // Datos ficticios (Mock) para Preview
-      const mockData = {
-        fecha: fecha,
-        total_planificadas: 120,
-        completadas: 95,
-        no_realizadas: 5,
-        tasa_cumplimiento_pct: 79.1,
-        reponedores: [
-          {
-            id_reponedor: 1,
-            nombre: "Juan Mamani",
-            completadas: 25,
-            no_realizadas: 2,
-            desviacion_orden_pct: 12.5
-          },
-          {
-            id_reponedor: 5,
-            nombre: "Alexis Rodriguez",
-            completadas: 30,
-            no_realizadas: 0,
-            desviacion_orden_pct: 0
-          },
-          {
-            id_reponedor: 8,
-            nombre: "Maria Gomez",
-            completadas: 40,
-            no_realizadas: 3,
-            desviacion_orden_pct: 25.0
-          }
-        ]
-      };
+    // Datos Ficticios basados en el modelo relacional (Tablas -> KPIs)
+    setData({
+      kpis_diarios: {
+        pdvs_visitados: 95,
+        pdvs_asignados: 120,
+        cobertura_pct: 79.1,
+        quiebres_stock: 12,
+        incidencias_reportadas: 8,
+        desviacion_tiempo_min: 45,
+        desviacion_km: 12.5
+      },
+      rutas_eficiencia: {
+        km_real: 154,
+        km_estimado: 140,
+        eficiencia_km_pct: 90.9
+      },
+      ahorros_redistribucion: {
+        tiempo_min: 120,
+        km: 35
+      },
+      impacto_clima: [
+        { clima: 'Soleado', tiempo: 15 },
+        { clima: 'Nublado', tiempo: 18 },
+        { clima: 'Llovizna', tiempo: 28 },
+        { clima: 'Tormenta', tiempo: 45 }
+      ],
+      tiempos_reponedores: [
+        { nombre: 'Juan M.', estimado: 120, real: 145 },
+        { nombre: 'Alexis R.', estimado: 180, real: 175 },
+        { nombre: 'Maria G.', estimado: 150, real: 210 },
+        { nombre: 'Pedro L.', estimado: 140, real: 140 },
+        { nombre: 'Carla T.', estimado: 160, real: 185 }
+      ],
+      incidencias: [
+        { name: 'Resueltas', value: 15, color: '#10b981' }, // emerald
+        { name: 'Pendientes', value: 5, color: '#ef4444' } // red
+      ],
+      motivos_no_visita: [
+        { name: 'Cerrado', value: 12, color: '#6366f1' }, // indigo
+        { name: 'Sin Tiempo', value: 8, color: '#f59e0b' }, // amber
+        { name: 'Fuera de Ruta', value: 5, color: '#8b5cf6' } // violet
+      ],
+      alertas_recalibracion: [
+        { id: 'GV-1403', pdv: 'UPSA Mayorista', rep: 'Alexis', est: 15, real: 40, diff: 25, sug: 'Recalibrar a 35m' },
+        { id: 'GV002', pdv: 'Tienda XYZ', rep: 'Juan', est: 20, real: 55, diff: 35, sug: 'Revisar Acceso' },
+        { id: 'GV055', pdv: 'Micromercado Sol', rep: 'Maria', est: 10, real: 45, diff: 35, sug: 'Alta Demanda (Subir a 40m)' }
+      ]
+    });
 
-      setMetricas(mockData);
-      setKpis(mockData.reponedores);
-    } catch (e) {
-      console.error("Error cargando reportes", e);
-    } finally {
-      setIsLoading(false);
-    }
+    setIsLoading(false);
   };
 
-  const handleExport = async () => {
-    try {
-      // Generar CSV ficticio bien alineado con los datos solicitados
-      const mockRows = [
-        ["reponedor", "pdv_codigo", "pdv_nombre", "categoria", "mercado", "hora_inicio", "hora_fin", "tiempo_real_min", "tiempo_estimado_min", "desviacion_min", "estado", "notas"],
-        ["alexis", "GV-1403", "UPSA", "MAYORISTA", "10 DE ENERO", "08:00", "08:15", "15.0", "15.0", "0.0", "completada", "Todo en orden"],
-        ["alexis", "GV007", "upsas", "MINORISTA", "CHASQUIPAMPA", "08:20", "08:40", "20.0", "15.0", "5.0", "completada", ""],
-        ["Reponedor 1", "GV002", "Tienda XYZ", "MINORISTA", "CHASQUIPAMPA", "", "", "0.0", "30.0", "0.0", "no_realizada", "Local cerrado"],
-        ["Reponedor 1", "GV001", "Kiosco Maria", "MINORISTA", "CHASQUIPAMPA", "09:00", "09:40", "40.0", "30.0", "10.0", "completada", "Mucha fila para entregar"],
-        ["Reponedor 1", "GV003", "Micromercado Sol", "MINORISTA", "CHASQUIPAMPA", "10:00", "10:20", "20.0", "20.0", "0.0", "completada", ""]
-      ];
+  const handleExport = () => {
+    if (!data) return;
+    
+    // Generación de CSV complejo
+    const rows = [];
+    rows.push(["REPORTE ANALITICO AVANZADO - INTELIGENCIA DE CAMPO"]);
+    rows.push([`Fecha: ${fecha}`]);
+    rows.push([]);
+    
+    // KPIs Diarios
+    rows.push(["1. KPIS DIARIOS"]);
+    rows.push(["Cobertura (%)", "PDVs Visitados", "PDVs Asignados", "Quiebres", "Incidencias", "Desviacion Tiempo (min)", "Desviacion Ruta (km)"]);
+    rows.push([
+      data.kpis_diarios.cobertura_pct, data.kpis_diarios.pdvs_visitados, data.kpis_diarios.pdvs_asignados,
+      data.kpis_diarios.quiebres_stock, data.kpis_diarios.incidencias_reportadas,
+      data.kpis_diarios.desviacion_tiempo_min, data.kpis_diarios.desviacion_km
+    ]);
+    rows.push([]);
 
-      // Unir usando punto y coma (;) que es estándar para Excel en Latinoamérica/España. Se usan comillas para evitar rupturas por texto con comas.
-      const finalCsvText = mockRows.map(row => row.map(cell => `"${cell}"`).join(";")).join("\n");
+    // Tiempos Reponedores
+    rows.push(["2. TIEMPO REAL VS ESTIMADO (REPONEDORES)"]);
+    rows.push(["Nombre", "Estimado (min)", "Real (min)", "Diferencia"]);
+    data.tiempos_reponedores.forEach(r => {
+      rows.push([r.nombre, r.estimado, r.real, r.real - r.estimado]);
+    });
+    rows.push([]);
 
-      // Añadir BOM (Byte Order Mark) para UTF-8, asegura que Excel lea tildes y ñ correctamente
-      const bom = "\uFEFF";
-      const blob = new Blob([bom + finalCsvText], { type: "text/csv;charset=utf-8;" });
-      const url = URL.createObjectURL(blob);
-      
-      const link = document.createElement("a");
-      link.href = url;
-      link.setAttribute("download", `reporte_preview_${fecha}.csv`);
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
-    } catch (e) {
-      alert("Hubo un problema al exportar el CSV: " + e.message);
-    }
+    // Alertas de Recalibración
+    rows.push(["3. ALERTAS DE RECALIBRACION (PDVS CON TIEMPO DESVIADO)"]);
+    rows.push(["ID PDV", "Nombre PDV", "Reponedor", "T. Estimado", "T. Real", "Desviación", "Sugerencia del Algoritmo"]);
+    data.alertas_recalibracion.forEach(a => {
+      rows.push([a.id, `"${a.pdv}"`, a.rep, a.est, a.real, a.diff, `"${a.sug}"`]);
+    });
+
+    const csvContent = rows.map(r => r.join(";")).join("\n");
+    const bom = "\uFEFF";
+    const blob = new Blob([bom + csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.setAttribute("download", `Reporte_Inteligencia_${fecha}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
   };
+
+  if (isLoading || !data) {
+    return (
+      <div className="h-full flex items-center justify-center text-slate-500 font-medium">
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-8 h-8 border-4 border-brand-blue border-t-transparent rounded-full animate-spin"></div>
+          <p>Procesando inteligencia de campo...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col gap-6 pb-8 h-full">
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4">
         <div>
-          <h2 className="text-2xl font-bold text-slate-800 dark:text-white tracking-tight flex items-center gap-2 transition-colors">
-            <BarChart3 className="text-brand-blue" />
-            Reportes Analíticos y KPIs
+          <h2 className="text-2xl font-bold text-slate-800 dark:text-white tracking-tight flex items-center gap-2">
+            <TrendingUp className="text-brand-blue" />
+            Centro de Inteligencia y KPIs
           </h2>
-          <p className="text-sm text-slate-500 dark:text-slate-400 mt-1 transition-colors">Analiza el rendimiento general y de campo por fecha.</p>
+          <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">Análisis profundo de campo basado en métricas reales vs estimadas.</p>
         </div>
         <div className="flex gap-3">
           <div className="relative">
@@ -117,118 +155,182 @@ export function ReportsView() {
             onClick={handleExport}
             className="bg-brand-blue hover:bg-brand-blue-hover text-white px-4 py-2 rounded-lg text-sm font-bold flex items-center gap-2 shadow-sm transition-colors"
           >
-            <Download size={16} /> Exportar CSV
+            <Download size={16} /> Exportar Reporte
           </button>
         </div>
       </div>
 
-      {isLoading ? (
-        <div className="flex-1 flex items-center justify-center text-slate-500 dark:text-slate-400 font-medium">
-          Cargando métricas...
-        </div>
-      ) : (
-        <div className="flex flex-col gap-6">
-          {/* Métricas Globales */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="bg-white dark:bg-dark-card border border-slate-200 dark:border-slate-700 rounded-xl p-5 shadow-sm transition-colors flex items-center gap-4 hover:border-brand-blue/30 group">
-              <div className="w-12 h-12 rounded-full bg-blue-50 dark:bg-brand-blue/10 flex items-center justify-center group-hover:scale-110 transition-transform">
-                <CheckCircle className="text-brand-blue" size={24} />
-              </div>
-              <div>
-                <p className="text-sm font-bold text-slate-500 dark:text-slate-400">Cumplimiento Global</p>
-                <h3 className="text-2xl font-black text-slate-800 dark:text-white">{metricas?.tasa_cumplimiento_pct != null ? metricas.tasa_cumplimiento_pct : 0}%</h3>
-              </div>
-            </div>
-
-            <div className="bg-white dark:bg-dark-card border border-slate-200 dark:border-slate-700 rounded-xl p-5 shadow-sm transition-colors flex items-center gap-4 hover:border-emerald-500/30 group">
-              <div className="w-12 h-12 rounded-full bg-emerald-50 dark:bg-emerald-500/10 flex items-center justify-center group-hover:scale-110 transition-transform">
-                <TrendingUp className="text-emerald-500" size={24} />
-              </div>
-              <div>
-                <p className="text-sm font-bold text-slate-500 dark:text-slate-400">Visitas Completadas</p>
-                <h3 className="text-2xl font-black text-slate-800 dark:text-white">
-                  {metricas?.completadas || 0} <span className="text-sm font-bold text-slate-400">/ {metricas?.total_planificadas || 0}</span>
-                </h3>
-              </div>
-            </div>
-
-            <div className="bg-white dark:bg-dark-card border border-slate-200 dark:border-slate-700 rounded-xl p-5 shadow-sm transition-colors flex items-center gap-4 hover:border-red-500/30 group">
-              <div className="w-12 h-12 rounded-full bg-red-50 dark:bg-red-500/10 flex items-center justify-center group-hover:scale-110 transition-transform">
-                <Clock className="text-red-500" size={24} />
-              </div>
-              <div>
-                <p className="text-sm font-bold text-slate-500 dark:text-slate-400">Visitas Fallidas</p>
-                <h3 className="text-2xl font-black text-red-500 dark:text-red-400">{metricas?.no_realizadas || 0} <span className="text-sm font-bold text-slate-400">NO REALIZADAS</span></h3>
-              </div>
-            </div>
+      {/* 1. SECCIÓN: RESUMEN OPERATIVO (Tarjetas) */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        {/* Cobertura Diaria */}
+        <div className="bg-white dark:bg-dark-card border border-slate-200 dark:border-slate-700 rounded-xl p-5 shadow-sm relative overflow-hidden group">
+          <div className="absolute -right-4 -top-4 w-20 h-20 bg-brand-blue/5 rounded-full group-hover:scale-150 transition-transform duration-500"></div>
+          <p className="text-sm font-bold text-slate-500 dark:text-slate-400 relative z-10">Cobertura Diaria</p>
+          <div className="flex items-end gap-2 mt-2 relative z-10">
+            <h3 className="text-3xl font-black text-slate-800 dark:text-white">{data.kpis_diarios.cobertura_pct}%</h3>
+            <span className="text-sm font-medium text-slate-400 mb-1">({data.kpis_diarios.pdvs_visitados}/{data.kpis_diarios.pdvs_asignados} PDVs)</span>
           </div>
+        </div>
 
-          {/* Tabla de KPIs por Reponedor */}
-          <div className="bg-white dark:bg-dark-card rounded-xl border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col flex-1 min-h-0 transition-colors">
-            <div className="p-4 border-b border-slate-200 dark:border-slate-700 flex bg-slate-50/50 dark:bg-slate-800/30 rounded-t-xl items-center gap-2 transition-colors">
-              <Users className="text-slate-400" size={18} />
-              <h3 className="font-bold text-slate-800 dark:text-slate-100">Rendimiento por Reponedor</h3>
-            </div>
+        {/* Quiebres e Incidencias */}
+        <div className="bg-white dark:bg-dark-card border border-slate-200 dark:border-slate-700 rounded-xl p-5 shadow-sm relative overflow-hidden group">
+          <div className="absolute -right-4 -top-4 w-20 h-20 bg-amber-500/5 rounded-full group-hover:scale-150 transition-transform duration-500"></div>
+          <div className="flex justify-between items-start relative z-10">
+            <p className="text-sm font-bold text-slate-500 dark:text-slate-400">Problemas de Campo</p>
+            <ShieldAlert className="text-amber-500" size={18} />
+          </div>
+          <div className="mt-2 relative z-10">
+            <h3 className="text-3xl font-black text-amber-600 dark:text-amber-500">{data.kpis_diarios.quiebres_stock + data.kpis_diarios.incidencias_reportadas}</h3>
+            <p className="text-xs font-bold text-slate-400 mt-1">{data.kpis_diarios.quiebres_stock} Quiebres · {data.kpis_diarios.incidencias_reportadas} Alertas</p>
+          </div>
+        </div>
 
-            <div className="overflow-x-auto flex-1 p-4">
-              {kpis.length === 0 ? (
-                <div className="text-center text-slate-500 dark:text-slate-400 py-10 text-sm">
-                  No hay datos de KPIs registrados para esta fecha.
+        {/* Eficiencia de Ruta */}
+        <div className="bg-white dark:bg-dark-card border border-slate-200 dark:border-slate-700 rounded-xl p-5 shadow-sm relative overflow-hidden group">
+          <div className="absolute -right-4 -top-4 w-20 h-20 bg-emerald-500/5 rounded-full group-hover:scale-150 transition-transform duration-500"></div>
+          <div className="flex justify-between items-start relative z-10">
+            <p className="text-sm font-bold text-slate-500 dark:text-slate-400">Eficiencia Logística (Km)</p>
+            <Route className="text-emerald-500" size={18} />
+          </div>
+          <div className="mt-2 relative z-10">
+            <h3 className="text-3xl font-black text-slate-800 dark:text-white">{data.rutas_eficiencia.eficiencia_km_pct}%</h3>
+            <p className="text-xs font-bold text-emerald-500 mt-1">Real: {data.rutas_eficiencia.km_real}km / Est: {data.rutas_eficiencia.km_estimado}km</p>
+          </div>
+        </div>
+
+        {/* Ahorro por Redistribución */}
+        <div className="bg-gradient-to-br from-brand-blue to-indigo-600 rounded-xl p-5 shadow-md relative overflow-hidden group text-white">
+          <div className="absolute -right-4 -top-4 w-20 h-20 bg-white/10 rounded-full group-hover:scale-150 transition-transform duration-500"></div>
+          <div className="flex justify-between items-start relative z-10">
+            <p className="text-sm font-bold text-blue-100">Ahorro del Algoritmo</p>
+            <Sparkles className="text-amber-300" size={18} />
+          </div>
+          <div className="mt-2 relative z-10">
+            <h3 className="text-3xl font-black">+{data.ahorros_redistribucion.tiempo_min} min</h3>
+            <p className="text-xs font-bold text-blue-200 mt-1">También ahorró {data.ahorros_redistribucion.km} km en ruta</p>
+          </div>
+        </div>
+      </div>
+
+      {/* 2. SECCIÓN: GRÁFICOS PRINCIPALES */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        
+        {/* Tiempos Reales vs Estimados */}
+        <div className="bg-white dark:bg-dark-card border border-slate-200 dark:border-slate-700 rounded-xl p-5 shadow-sm flex flex-col">
+          <h3 className="font-bold text-slate-800 dark:text-white mb-4 flex items-center gap-2">
+            <Clock className="text-brand-blue" size={18} />
+            Tiempos de Visita: Real vs Estimado
+          </h3>
+          <div className="flex-1 min-h-[300px]">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={data.tiempos_reponedores} margin={{ top: 20, right: 30, left: 0, bottom: 5 }}>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#334155" opacity={0.2} />
+                <XAxis dataKey="nombre" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#64748b' }} />
+                <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#64748b' }} />
+                <RechartsTooltip 
+                  cursor={{fill: 'transparent'}}
+                  contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                />
+                <Legend iconType="circle" wrapperStyle={{ fontSize: '12px' }} />
+                <Bar dataKey="estimado" name="Tiempo Estimado (min)" fill="#cbd5e1" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="real" name="Tiempo Real (min)" fill="#3b82f6" radius={[4, 4, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+
+        {/* Impacto del Clima */}
+        <div className="bg-white dark:bg-dark-card border border-slate-200 dark:border-slate-700 rounded-xl p-5 shadow-sm flex flex-col">
+          <h3 className="font-bold text-slate-800 dark:text-white mb-4">Impacto del Clima en Promedio de Visita</h3>
+          <div className="flex-1 min-h-[300px]">
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={data.impacto_clima} margin={{ top: 20, right: 30, left: 0, bottom: 5 }}>
+                <defs>
+                  <linearGradient id="colorTiempo" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.3}/>
+                    <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0}/>
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#334155" opacity={0.2} />
+                <XAxis dataKey="clima" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#64748b' }} />
+                <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#64748b' }} />
+                <RechartsTooltip contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }} />
+                <Area type="monotone" dataKey="tiempo" name="Minutos Promedio" stroke="#8b5cf6" strokeWidth={3} fillOpacity={1} fill="url(#colorTiempo)" />
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+
+      </div>
+
+      {/* 3. SECCIÓN: COMPOSICIÓN Y ALERTAS */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        
+        {/* Tasa de Resolución */}
+        <div className="bg-white dark:bg-dark-card border border-slate-200 dark:border-slate-700 rounded-xl p-5 shadow-sm flex flex-col">
+          <h3 className="font-bold text-slate-800 dark:text-white mb-4 text-sm text-center">Tasa de Resolución (Incidencias)</h3>
+          <div className="flex-1 min-h-[220px]">
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie data={data.incidencias} cx="50%" cy="50%" innerRadius={60} outerRadius={80} paddingAngle={5} dataKey="value">
+                  {data.incidencias.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.color} />
+                  ))}
+                </Pie>
+                <RechartsTooltip contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }} />
+                <Legend iconType="circle" wrapperStyle={{ fontSize: '12px' }} />
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+
+        {/* Motivos No Visita */}
+        <div className="bg-white dark:bg-dark-card border border-slate-200 dark:border-slate-700 rounded-xl p-5 shadow-sm flex flex-col">
+          <h3 className="font-bold text-slate-800 dark:text-white mb-4 text-sm text-center">Motivos de PDVs No Visitados</h3>
+          <div className="flex-1 min-h-[220px]">
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie data={data.motivos_no_visita} cx="50%" cy="50%" outerRadius={80} paddingAngle={2} dataKey="value">
+                  {data.motivos_no_visita.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.color} />
+                  ))}
+                </Pie>
+                <RechartsTooltip contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }} />
+                <Legend iconType="circle" wrapperStyle={{ fontSize: '12px' }} />
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+
+        {/* Alertas de Recalibración (Tabla) */}
+        <div className="bg-white dark:bg-dark-card border border-slate-200 dark:border-slate-700 rounded-xl p-5 shadow-sm flex flex-col overflow-hidden">
+          <h3 className="font-bold text-slate-800 dark:text-white mb-4 flex items-center gap-2">
+            <AlertTriangle className="text-amber-500" size={18} />
+            Alertas: Recalibración Urgente
+          </h3>
+          <div className="flex-1 overflow-y-auto">
+            <div className="space-y-3">
+              {data.alertas_recalibracion.map((alerta, idx) => (
+                <div key={idx} className="bg-amber-50 dark:bg-amber-500/10 border border-amber-100 dark:border-amber-500/20 rounded-lg p-3">
+                  <div className="flex justify-between items-start mb-1">
+                    <p className="font-bold text-sm text-slate-800 dark:text-slate-200">{alerta.pdv}</p>
+                    <span className="bg-red-100 text-red-600 dark:bg-red-500/20 dark:text-red-400 text-[10px] font-black px-2 py-0.5 rounded-full">
+                      +{alerta.diff} min
+                    </span>
+                  </div>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 mb-2">Reponedor: {alerta.rep} (Est: {alerta.est}m / Real: {alerta.real}m)</p>
+                  <div className="flex items-center gap-1.5 text-xs font-bold text-amber-700 dark:text-amber-500">
+                    <Sparkles size={12} />
+                    Sugerencia: {alerta.sug}
+                  </div>
                 </div>
-              ) : (
-                <table className="w-full text-left border-collapse">
-                  <thead>
-                    <tr className="bg-slate-50 dark:bg-slate-800/50 text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase border-b border-slate-200 dark:border-slate-700 transition-colors">
-                      <th className="px-4 py-3 rounded-tl-lg">Reponedor</th>
-                      <th className="px-4 py-3 text-center">Visitas Completadas</th>
-                      <th className="px-4 py-3 text-center">No Realizadas</th>
-                      <th className="px-4 py-3 text-center rounded-tr-lg">Desviación (Orden)</th>
-                    </tr>
-                  </thead>
-                  <tbody className="text-sm">
-                    {kpis.map((kpi, idx) => (
-                      <tr key={idx} className="border-b border-slate-100 dark:border-slate-800/50 hover:bg-slate-50 dark:hover:bg-slate-800/80 transition-colors">
-                        <td className="px-4 py-4 text-slate-800 dark:text-slate-200 font-bold flex items-center gap-2">
-                          <div className="w-8 h-8 rounded-full bg-brand-blue/10 text-brand-blue flex items-center justify-center text-xs">
-                            {kpi.nombre ? kpi.nombre.charAt(0) : 'R'}
-                          </div>
-                          <div>
-                            <p>{kpi.nombre || 'Reponedor'}</p>
-                            <p className="text-[10px] text-slate-500 font-mono tracking-widest">ID: {kpi.id_reponedor}</p>
-                          </div>
-                        </td>
-                        <td className="px-4 py-4 text-center">
-                          <span className="font-black text-emerald-600 dark:text-emerald-400 text-lg">{kpi.completadas || 0}</span>
-                        </td>
-                        <td className="px-4 py-4 text-center">
-                          {kpi.no_realizadas > 0 ? (
-                            <span className="bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400 px-2.5 py-1 rounded-full font-bold text-xs">{kpi.no_realizadas}</span>
-                          ) : (
-                            <span className="text-slate-400 font-medium">-</span>
-                          )}
-                        </td>
-                        <td className="px-4 py-4 text-center">
-                          <div className="flex flex-col items-center justify-center gap-1">
-                            <span className={clsx("font-bold text-sm", kpi.desviacion_orden_pct > 20 ? "text-red-500" : kpi.desviacion_orden_pct > 0 ? "text-amber-500" : "text-emerald-500")}>
-                              {kpi.desviacion_orden_pct != null ? kpi.desviacion_orden_pct : 0}%
-                            </span>
-                            <div className="w-20 h-1.5 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
-                              <div 
-                                className={clsx("h-full", kpi.desviacion_orden_pct > 20 ? "bg-red-500" : kpi.desviacion_orden_pct > 0 ? "bg-amber-500" : "bg-emerald-500")} 
-                                style={{ width: `${Math.min(100, kpi.desviacion_orden_pct || 0)}%` }}
-                              ></div>
-                            </div>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              )}
+              ))}
             </div>
           </div>
         </div>
-      )}
+
+      </div>
+
     </div>
   );
 }
