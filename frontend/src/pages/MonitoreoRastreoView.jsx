@@ -22,6 +22,9 @@ export function MonitoreoRastreoView() {
   
   // Tab State
   const [activeTab, setActiveTab] = useState(searchParams.get('tab') === 'rutas' ? 'rutas' : 'reponedores');
+  
+  // View Mode: 'global', 'rutas', 'historial'
+  const [viewMode, setViewMode] = useState('global');
 
   // Unified Map Center
   const [mapCenter, setMapCenter] = useState([-16.5000, -68.1500]);
@@ -33,7 +36,9 @@ export function MonitoreoRastreoView() {
   const [searchQueryRep, setSearchQueryRep] = useState('');
   const [wsStatus, setWsStatus] = useState('conectando');
   const [historialRuta, setHistorialRuta] = useState([]);
-  const [fechaFiltro, setFechaFiltro] = useState(new Date().toISOString().split('T')[0]);
+  const [fechaInicio, setFechaInicio] = useState(new Date().toISOString().split('T')[0]);
+  const [fechaFin, setFechaFin] = useState(new Date().toISOString().split('T')[0]);
+  const [pdvs, setPdvs] = useState([]);
 
   // === RUTAS STATE ===
   const [routes, setRoutes] = useState([]);
@@ -52,12 +57,15 @@ export function MonitoreoRastreoView() {
     popupAnchor: [0, -24]
   });
 
-  // Load Reponedores Initial
+  // Load Initial Data
   useEffect(() => {
     Promise.all([
       API.getUsuarios().catch(() => []),
-      API.getPosicionesGps().catch(() => [])
-    ]).then(([usuarios, gpsData]) => {
+      API.getPosicionesGps().catch(() => []),
+      API.getPdvs().catch(() => [])
+    ]).then(([usuarios, gpsData, pdvData]) => {
+      
+      if (Array.isArray(pdvData)) setPdvs(pdvData);
       let initialReponedores = [];
       if (Array.isArray(usuarios)) {
         initialReponedores = usuarios
@@ -167,14 +175,14 @@ export function MonitoreoRastreoView() {
 
   // Load Historial GPS
   useEffect(() => {
-    if (selectedRepId) {
-      API.getHistorialGps(selectedRepId, fechaFiltro)
+    if (selectedRepId && viewMode === 'historial') {
+      API.getHistorialGps(selectedRepId, fechaInicio, fechaFin)
         .then(data => setHistorialRuta(Array.isArray(data) ? data : []))
         .catch(() => setHistorialRuta([]));
     } else {
       setHistorialRuta([]);
     }
-  }, [selectedRepId, fechaFiltro]);
+  }, [selectedRepId, fechaInicio, fechaFin, viewMode]);
 
   // Load Rutas Initial
   useEffect(() => {
@@ -208,6 +216,7 @@ export function MonitoreoRastreoView() {
 
   const handleSelectReponedor = (rep) => {
     setSelectedRepId(rep.id);
+    setViewMode('global'); // Regresar a modo focalizado (global con zoom)
     if (rep.lat && rep.lon) {
       setMapCenter([rep.lat, rep.lon]);
       setMapZoom(16);
@@ -215,8 +224,15 @@ export function MonitoreoRastreoView() {
   };
 
   const handleVerRutasReponedor = (repId) => {
+    setSelectedRepId(repId);
+    setViewMode('rutas');
     setActiveTab('rutas');
     setSearchQueryRoute(repId.toString());
+  };
+  
+  const handleVerHistorial = (repId) => {
+    setSelectedRepId(repId);
+    setViewMode('historial');
   };
 
   const handleOptimize = async () => {
@@ -341,13 +357,13 @@ export function MonitoreoRastreoView() {
           {/* Tabs */}
           <div className="flex border-b border-slate-200 dark:border-dark-border">
             <button 
-              onClick={() => setActiveTab('reponedores')}
+              onClick={() => { setActiveTab('reponedores'); setViewMode('global'); }}
               className={clsx("flex-1 py-3 text-sm font-bold transition-colors border-b-2", activeTab === 'reponedores' ? "border-brand-blue text-brand-blue bg-blue-50/50 dark:bg-brand-blue/5" : "border-transparent text-slate-500 hover:text-slate-700 dark:hover:text-slate-300")}
             >
               Reponedores
             </button>
             <button 
-              onClick={() => setActiveTab('rutas')}
+              onClick={() => { setActiveTab('rutas'); setViewMode('rutas'); }}
               className={clsx("flex-1 py-3 text-sm font-bold transition-colors border-b-2", activeTab === 'rutas' ? "border-brand-blue text-brand-blue bg-blue-50/50 dark:bg-brand-blue/5" : "border-transparent text-slate-500 hover:text-slate-700 dark:hover:text-slate-300")}
             >
               Rutas Asignadas
@@ -362,10 +378,18 @@ export function MonitoreoRastreoView() {
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
                   <input type="text" value={searchQueryRep} onChange={(e) => setSearchQueryRep(e.target.value)} placeholder="Buscar reponedor..." className="w-full pl-9 pr-3 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 rounded-lg text-sm focus:ring-1 focus:ring-brand-blue outline-none transition-colors" />
                 </div>
-                <div className="mt-3">
-                  <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">Fecha del Historial GPS</label>
-                  <input type="date" value={fechaFiltro} onChange={(e) => setFechaFiltro(e.target.value)} className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 rounded-lg text-sm focus:ring-1 focus:ring-brand-blue outline-none transition-colors" />
-                </div>
+                {viewMode === 'historial' && (
+                  <div className="mt-3 grid grid-cols-2 gap-2 animate-in fade-in slide-in-from-top-2">
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">F. Inicial</label>
+                      <input type="date" value={fechaInicio} onChange={(e) => setFechaInicio(e.target.value)} className="w-full px-2 py-1.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 rounded-md text-xs focus:ring-1 focus:ring-brand-blue outline-none transition-colors" />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">F. Final</label>
+                      <input type="date" value={fechaFin} onChange={(e) => setFechaFin(e.target.value)} className="w-full px-2 py-1.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200 rounded-md text-xs focus:ring-1 focus:ring-brand-blue outline-none transition-colors" />
+                    </div>
+                  </div>
+                )}
               </div>
               <div className="flex-1 overflow-y-auto p-3 space-y-2">
                 {filteredReponedores.map((rep) => {
@@ -389,9 +413,8 @@ export function MonitoreoRastreoView() {
                         <button onClick={(e) => { e.stopPropagation(); handleVerRutasReponedor(rep.id); }} className="w-full bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 py-1.5 rounded-lg text-[10px] font-bold transition-colors flex items-center justify-center gap-1">
                           <Route size={12} className="text-brand-blue" /> Ver Rutas Asignadas
                         </button>
-                        <button onClick={(e) => { e.stopPropagation(); /* TODO */ }} className="w-full bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 py-1.5 rounded-lg text-[10px] font-bold transition-colors flex items-center justify-center gap-1">
-                           {/* Placeholder para la nueva acción que pidió el usuario */}
-                          <Zap size={12} className="text-brand-blue" /> Acción (Falta Definir)
+                        <button onClick={(e) => { e.stopPropagation(); handleVerHistorial(rep.id); }} className="w-full bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 py-1.5 rounded-lg text-[10px] font-bold transition-colors flex items-center justify-center gap-1">
+                          <Radio size={12} className="text-brand-blue" /> Historial de Rutas
                         </button>
                       </div>
                     </div>
@@ -448,17 +471,19 @@ export function MonitoreoRastreoView() {
             <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
             <MapUpdater center={mapCenter} zoom={mapZoom} />
             
-            {/* 1. LAYER: Reponedores en vivo */}
+            {/* CAPA 0: Todos los Puntos de Venta (PDVs) - Solo en Modo Global */}
+            {viewMode === 'global' && pdvs.map(pdv => (
+              pdv.latitud && pdv.longitud ? (
+                <CircleMarker key={`pdv-${pdv.id_pdv}`} center={[pdv.latitud, pdv.longitud]} radius={4} pathOptions={{ color: '#94a3b8', fillColor: '#cbd5e1', fillOpacity: 0.7, weight: 1 }}>
+                  <Popup><p className="font-bold text-xs">{pdv.nombre_pdv}</p></Popup>
+                </CircleMarker>
+              ) : null
+            ))}
+
+            {/* CAPA 1: Reponedores en vivo */}
             {displayReponedores
               .filter(r => r.lat && r.lon)
-              .filter(r => {
-                // Si estamos en la pestaña de reponedores y hemos seleccionado a uno, 
-                // SOLO mostramos a ese reponedor. Si no, los mostramos todos.
-                if (activeTab === 'reponedores' && selectedRepId) {
-                  return r.id === selectedRepId;
-                }
-                return true;
-              })
+              .filter(r => viewMode === 'global' ? true : r.id === selectedRepId)
               .map((rep) => (
               <Marker key={`rep-${rep.id}`} position={[rep.lat, rep.lon]} icon={createMarkerIcon(rep.estado)}>
                 <Popup>
@@ -470,15 +495,15 @@ export function MonitoreoRastreoView() {
               </Marker>
             ))}
 
-            {/* 2. LAYER: Historial GPS del Reponedor Seleccionado */}
-            {activeTab === 'reponedores' && historialRuta.length > 0 && (
+            {/* CAPA 2: Historial GPS del Reponedor Seleccionado */}
+            {viewMode === 'historial' && historialRuta.length > 0 && (
               <>
                 <Polyline positions={historialRuta.filter(p => p.latitud && p.longitud).map(p => [p.latitud, p.longitud])} color="#3b82f6" weight={3} opacity={0.8} dashArray="10, 10" />
                 {historialRuta.filter(p => p.latitud && p.longitud).map((punto, idx) => (
                   <CircleMarker key={`hist-${idx}`} center={[punto.latitud, punto.longitud]} radius={4} pathOptions={{ color: '#2563eb', fillColor: 'white', fillOpacity: 1, weight: 2 }}>
                     <Popup>
                       <div className="font-sans text-xs">
-                        <p className="font-bold">Hora: {new Date(punto.timestamp).toLocaleTimeString()}</p>
+                        <p className="font-bold">Hora: {new Date(punto.timestamp || punto.creado_en).toLocaleString()}</p>
                       </div>
                     </Popup>
                   </CircleMarker>
@@ -486,8 +511,8 @@ export function MonitoreoRastreoView() {
               </>
             )}
 
-            {/* 3. LAYER: Ruta Asignada (PDVs y Camino planeado) */}
-            {activeTab === 'rutas' && (
+            {/* CAPA 3: Ruta Asignada (PDVs y Camino planeado) */}
+            {viewMode === 'rutas' && (
               <>
                 {mapPath.length > 0 && (
                   <Polyline positions={mapPath} color={getRouteStatusColor(selectedRoute?.estado)} weight={4} opacity={0.8} dashArray={selectedRoute?.estado === 'pendiente' ? "5, 10" : undefined} />
