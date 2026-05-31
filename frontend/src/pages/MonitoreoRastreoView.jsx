@@ -17,6 +17,24 @@ function MapUpdater({ center, zoom }) {
   return null;
 }
 
+const LiveClock = () => {
+  const [time, setTime] = useState(new Date());
+
+  useEffect(() => {
+    const timer = setInterval(() => setTime(new Date()), 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  return (
+    <div className="absolute top-4 right-4 z-[400] bg-white/90 dark:bg-slate-800/90 backdrop-blur px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 shadow-md flex items-center gap-2 pointer-events-none">
+      <span className="w-2 h-2 rounded-full bg-brand-blue animate-pulse"></span>
+      <span className="font-mono text-sm font-bold text-slate-800 dark:text-slate-200 tracking-widest">
+        {time.toLocaleTimeString('es-BO', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+      </span>
+    </div>
+  );
+};
+
 export function MonitoreoRastreoView() {
   const [searchParams, setSearchParams] = useSearchParams();
   
@@ -497,6 +515,8 @@ export function MonitoreoRastreoView() {
               <p className="text-xs font-bold text-slate-500 mt-1">{routeDetails ? `${routeDetails.ruta_puntos?.length || 0} PDVs asignados` : 'Cargando paradas...'}</p>
             </div>
           )}
+
+          <LiveClock />
 
           <MapContainer center={mapCenter} zoom={mapZoom} className="w-full h-full">
             <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
