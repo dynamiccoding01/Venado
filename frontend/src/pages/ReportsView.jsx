@@ -33,58 +33,43 @@ export function ReportsView() {
     }
   };
 
-  const handleExport = () => {
-    if (!metricas && kpis.length === 0) {
-      alert("No hay datos para exportar en esta fecha.");
-      return;
+  const handleExport = async () => {
+    try {
+      const response = await fetch(`https://innovahack-gcrh.onrender.com/reporte/exportar/${fecha}`);
+      if (!response.ok) throw new Error("Error obteniendo el reporte del servidor");
+      
+      let csvText = await response.text();
+      
+      // Función para convertir separador de comas (,) a punto y coma (;) respetando comillas dobles
+      let inQuotes = false;
+      let finalCsvText = "";
+      for (let i = 0; i < csvText.length; i++) {
+        let char = csvText[i];
+        if (char === '"') {
+          inQuotes = !inQuotes;
+          finalCsvText += char;
+        } else if (char === ',' && !inQuotes) {
+          finalCsvText += ';'; // Reemplazar coma por punto y coma si no estamos dentro de comillas
+        } else {
+          finalCsvText += char;
+        }
+      }
+
+      // Añadir BOM (Byte Order Mark) para UTF-8, asegura que Excel lea tildes y ñ correctamente
+      const bom = "\uFEFF";
+      const blob = new Blob([bom + finalCsvText], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", `reporte_${fecha}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    } catch (e) {
+      alert("Hubo un problema al exportar el CSV: " + e.message);
     }
-
-    // Preparar filas del CSV
-    const rows = [];
-    rows.push(["REPORTE DIARIO DE RENDIMIENTO DE CAMPO"]);
-    rows.push([`Fecha: ${fecha}`]);
-    rows.push([]);
-    
-    // Métricas Globales
-    rows.push(["METRICAS GLOBALES"]);
-    rows.push(["Cumplimiento Global (%)", "Visitas Planificadas", "Visitas Completadas", "Visitas No Realizadas"]);
-    rows.push([
-      metricas?.tasa_cumplimiento_pct || 0,
-      metricas?.total_planificadas || 0,
-      metricas?.completadas || 0,
-      metricas?.no_realizadas || 0
-    ]);
-    rows.push([]);
-
-    // Detalle por reponedor
-    rows.push(["DETALLE POR REPONEDOR"]);
-    rows.push(["ID Reponedor", "Nombre", "Completadas", "No Realizadas", "Desviacion de Orden (%)"]);
-    
-    kpis.forEach(kpi => {
-      rows.push([
-        kpi.id_reponedor,
-        `"${kpi.nombre || ''}"`, // Comillas para evitar problemas con comas
-        kpi.completadas || 0,
-        kpi.no_realizadas || 0,
-        kpi.desviacion_orden_pct || 0
-      ]);
-    });
-
-    // Unir usando punto y coma (;) que es estándar para Excel en Latinoamérica/España
-    const csvContent = rows.map(r => r.join(";")).join("\n");
-    
-    // Añadir BOM (Byte Order Mark) para forzar a Excel a leer como UTF-8 y evitar fallos en eñes o tildes
-    const bom = "\uFEFF";
-    const blob = new Blob([bom + csvContent], { type: "text/csv;charset=utf-8;" });
-    const url = URL.createObjectURL(blob);
-    
-    const link = document.createElement("a");
-    link.href = url;
-    link.setAttribute("download", `Reporte_Venado_${fecha}.csv`);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
   };
 
   return (
