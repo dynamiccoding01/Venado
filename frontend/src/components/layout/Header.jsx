@@ -41,8 +41,8 @@ export function Header({ hidden }) {
 
   return (
     <header className={clsx(
-      "glass-header h-20 flex items-center justify-between px-8 shrink-0 z-20 relative transition-all duration-300 ease-in-out",
-      hidden ? "-mt-20 opacity-0 pointer-events-none" : "mt-0 opacity-100"
+      "glass-header h-16 md:h-20 flex items-center justify-between px-4 md:px-8 shrink-0 z-20 relative transition-all duration-300 ease-in-out",
+      hidden ? "-mt-16 md:-mt-20 opacity-0 pointer-events-none" : "mt-0 opacity-100"
     )}>
       {/* Left side: Search and Mobile Logo */}
       <div className="flex items-center h-full gap-4">

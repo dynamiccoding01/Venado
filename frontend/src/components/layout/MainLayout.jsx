@@ -17,7 +17,7 @@ export function MainLayout() {
     lastScrollY.current = currentScrollY;
   };
   return (
-    <div className="flex flex-col-reverse md:flex-row h-screen w-full overflow-hidden bg-slate-50 dark:bg-dark-bg text-slate-800 dark:text-slate-100 font-sans transition-colors duration-500">
+    <div className="flex flex-col-reverse md:flex-row h-[100dvh] w-full overflow-hidden bg-slate-50 dark:bg-dark-bg text-slate-800 dark:text-slate-100 font-sans transition-colors duration-500">
       {/* Left Sidebar */}
       <Sidebar hidden={isScrollingDown} />
       
