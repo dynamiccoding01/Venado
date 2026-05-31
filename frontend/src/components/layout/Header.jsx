@@ -6,7 +6,7 @@ import logo from '../../assets/logo.jpg';
 import { useTheme } from '../../context/ThemeContext';
 import { API } from '../../api/client';
 
-export function Header({ hidden }) {
+export function Header() {
   const { isDarkMode, toggleDarkMode } = useTheme();
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const dropdownRef = useRef(null);
@@ -40,10 +40,7 @@ export function Header({ hidden }) {
   }, [dropdownRef]);
 
   return (
-    <header className={clsx(
-      "glass-header h-16 md:h-20 flex items-center justify-between px-4 md:px-8 shrink-0 z-20 relative transition-all duration-300 ease-in-out",
-      hidden ? "-mt-16 md:-mt-20 opacity-0 pointer-events-none" : "mt-0 opacity-100"
-    )}>
+    <header className="glass-header h-16 md:h-20 flex items-center justify-between px-4 md:px-8 shrink-0 z-20 relative transition-all duration-300 ease-in-out">
       {/* Left side: Mobile Logo */}
       <div className="flex items-center h-full">
         {/* Mobile Logo */}

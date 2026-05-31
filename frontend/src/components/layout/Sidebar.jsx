@@ -14,7 +14,7 @@ const navItems = [
   { id: 'reporting', icon: BarChart3, label: 'Reportes KPIs', path: '/reports' },
 ];
 
-export function Sidebar({ hidden }) {
+export function Sidebar() {
   const userStr = localStorage.getItem('user');
   let userRole = null;
   if (userStr) {
@@ -31,10 +31,7 @@ export function Sidebar({ hidden }) {
   });
 
   return (
-    <aside className={clsx(
-      "w-full md:w-[80px] h-[70px] md:h-full glass-panel border-t md:border-t-0 md:border-r border-slate-200/50 dark:border-white/5 flex flex-row md:flex-col items-center justify-around md:justify-start px-2 md:px-0 py-0 md:py-6 shrink-0 z-30 transition-all duration-300 ease-in-out",
-      hidden ? "-mb-[70px] md:mb-0 opacity-0 md:opacity-100 pointer-events-none md:pointer-events-auto" : "mb-0 opacity-100 pointer-events-auto"
-    )}>
+    <aside className="w-full md:w-[80px] h-[70px] md:h-full glass-panel border-t md:border-t-0 md:border-r border-slate-200/50 dark:border-white/5 flex flex-row md:flex-col items-center justify-around md:justify-start px-2 md:px-0 py-0 md:py-6 shrink-0 z-30 transition-all duration-300 ease-in-out">
       {/* Logo */}
       <div className="w-12 h-12 bg-white rounded-2xl hidden md:flex items-center justify-center mb-10 shadow-lg shadow-brand-blue/30 transform transition-transform hover:scale-105 overflow-hidden p-1">
         <img src={logo} alt="Venado" className="w-full h-full object-contain" />
