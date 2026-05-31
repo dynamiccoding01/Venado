@@ -11,6 +11,7 @@ import { StaffAdmin } from './pages/StaffAdmin';
 import { Settings } from './pages/Settings';
 import { MercadosAdmin } from './pages/MercadosAdmin';
 import { CategoriasAdmin } from './pages/CategoriasAdmin';
+import { CatalogoAdmin } from './pages/CatalogoAdmin';
 import { Profile } from './pages/Profile';
 import { ThemeProvider } from './context/ThemeContext';
 
@@ -72,11 +73,8 @@ export default function App() {
               <MercadosAdmin />
             </RoleRoute>
           } />
-          <Route path="/categorias" element={
-            <RoleRoute allowedRoles={[1]}>
-              <CategoriasAdmin />
-            </RoleRoute>
-          } />
+          <Route path="/categorias" element={<RoleRoute allowedRoles={[1, 2]}><CategoriasAdmin /></RoleRoute>} />
+          <Route path="/catalogo" element={<RoleRoute allowedRoles={[1, 2]}><CatalogoAdmin /></RoleRoute>} />
           <Route path="/settings" element={
             <RoleRoute allowedRoles={[1]}>
               <Settings />

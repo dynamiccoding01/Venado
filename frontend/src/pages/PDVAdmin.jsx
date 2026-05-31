@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Search, Plus, Edit2, Save, Map as MapIcon, List as ListIcon, Trash2, X, Power, PowerOff } from 'lucide-react';
+import { Search, Plus, Edit2, Save, Map as MapIcon, List as ListIcon, Trash2, X, Power, PowerOff, Package, Clock } from 'lucide-react';
 import clsx from 'clsx';
 import { Modal } from '../components/common/Modal';
 import { MapContainer, TileLayer, Marker, Popup, useMapEvents } from 'react-leaflet';
@@ -97,20 +97,28 @@ export function PDVAdmin() {
   const [activeTab, setActiveTab] = useState('general');
   const [newPdv, setNewPdv] = useState(PDV_INITIAL_STATE);
 
+  // Entregas e Inventario State
+  const [productosCat, setProductosCat] = useState([]);
+  const [historialEntregas, setHistorialEntregas] = useState([]);
+  const [entregaForm, setEntregaForm] = useState({ id_producto: '', cantidad: '', notas: '' });
+  const [isSubmittingEntrega, setIsSubmittingEntrega] = useState(false);
+
   // Cargar datos
   useEffect(() => {
     async function fetchData() {
       setIsLoading(true);
       try {
-        const [pdvsData, mercData, catData, usersData] = await Promise.all([
+        const [pdvsData, mercData, catData, usersData, prodsData] = await Promise.all([
           API.getPdvs(),
           API.getMercados(),
           API.getCategorias(),
-          API.getUsuarios()
+          API.getUsuarios(),
+          API.getProductos().catch(() => [])
         ]);
         setPdvs(pdvsData || []);
         setMercados(mercData || []);
         setCategorias(catData || []);
+        setProductosCat(prodsData || []);
         
         if (usersData) {
            setSupervisores(usersData.filter(u => u.id_rol === 2));
@@ -124,6 +132,53 @@ export function PDVAdmin() {
     }
     fetchData();
   }, []);
+
+  useEffect(() => {
+    if (activeTab === 'entregas' && editingId) {
+      loadHistorialEntregas(editingId);
+    }
+  }, [activeTab, editingId]);
+
+  const loadHistorialEntregas = async (id_pdv) => {
+    try {
+      const data = await API.getHistorialEntregasPdv(id_pdv);
+      setHistorialEntregas(data || []);
+    } catch (e) {
+      console.error("Error cargando entregas", e);
+      setHistorialEntregas([]);
+    }
+  };
+
+  const handleRegistrarEntrega = async () => {
+    if (!entregaForm.id_producto || !entregaForm.cantidad) return alert("Selecciona un producto y cantidad.");
+    setIsSubmittingEntrega(true);
+    try {
+      const payload = {
+        id_visita: 1, // Visita ficticia admin
+        id_reponedor: 1, // Usuario admin
+        id_pdv: editingId,
+        notas: entregaForm.notas || "Registro Web (Dashboard)",
+        productos: [
+          {
+            id_producto: parseInt(entregaForm.id_producto),
+            cantidad_entregada: parseFloat(entregaForm.cantidad)
+          }
+        ]
+      };
+      await API.registrarEntrega(payload);
+      setEntregaForm({ id_producto: '', cantidad: '', notas: '' });
+      loadHistorialEntregas(editingId);
+      
+      // Actualizar stock localmente
+      const prodsData = await API.getProductos().catch(() => []);
+      setProductosCat(prodsData || []);
+      alert("Entrega registrada exitosamente");
+    } catch (e) {
+      alert("Error al registrar entrega. Verifica el stock o conectividad.");
+    } finally {
+      setIsSubmittingEntrega(false);
+    }
+  };
 
   const filteredPdvs = useMemo(() => {
     return pdvs.filter(pdv => {
@@ -404,11 +459,12 @@ export function PDVAdmin() {
       <Modal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} title={editMode ? "Modificar PDV" : "Registrar Nuevo PDV"} maxWidth="max-w-4xl">
         <form onSubmit={handleSavePdv} className="flex flex-col h-[70vh] max-h-[700px]">
           
-          <div className="flex border-b border-slate-200 dark:border-slate-700 px-6 shrink-0 bg-slate-50 dark:bg-slate-800/30">
+          <div className="flex border-b border-slate-200 dark:border-slate-700 px-6 shrink-0 bg-slate-50 dark:bg-slate-800/30 overflow-x-auto" style={{ scrollbarWidth: 'none' }}>
              {renderTabButton('general', 'General')}
              {renderTabButton('ubicacion', 'Ubicación')}
              {renderTabButton('horarios', 'Horarios y Operación')}
              {renderTabButton('contacto', 'Contacto y Asignaciones')}
+             {editMode && renderTabButton('entregas', 'Entregas e Inventario')}
           </div>
 
           <div className="flex-1 overflow-y-auto p-6 scroll-smooth">
@@ -580,6 +636,83 @@ export function PDVAdmin() {
                   </div>
                 </div>
              </div>
+
+             {/* TAB ENTREGAS */}
+             {editMode && (
+               <div className={clsx("space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300", activeTab !== 'entregas' && "hidden")}>
+                  
+                  {/* Formulario Registro Manual */}
+                  <div className="bg-slate-50 dark:bg-slate-800/50 p-4 rounded-xl border border-slate-200 dark:border-slate-700">
+                    <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200 mb-4 flex items-center gap-2">
+                      <Package size={16} className="text-brand-blue" />
+                      Registrar Entrega Manual
+                    </h3>
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                      <div className="md:col-span-2">
+                        <label className="block text-xs font-medium text-slate-500 mb-1">Producto</label>
+                        <select value={entregaForm.id_producto} onChange={e => setEntregaForm({...entregaForm, id_producto: e.target.value})} className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-white rounded-lg text-sm outline-none">
+                          <option value="">Seleccione producto...</option>
+                          {productosCat.map(p => <option key={p.id_producto} value={p.id_producto}>{p.nombre_producto} (Stock: {p.stock_actual})</option>)}
+                        </select>
+                      </div>
+                      <div>
+                        <label className="block text-xs font-medium text-slate-500 mb-1">Cantidad</label>
+                        <input type="number" min="0.1" step="any" value={entregaForm.cantidad} onChange={e => setEntregaForm({...entregaForm, cantidad: e.target.value})} className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-white rounded-lg text-sm outline-none" placeholder="Ej. 10" />
+                      </div>
+                      <div className="flex items-end">
+                        <button type="button" onClick={handleRegistrarEntrega} disabled={isSubmittingEntrega} className="w-full flex items-center justify-center gap-2 bg-brand-blue hover:bg-blue-600 text-white px-4 py-2 rounded-lg font-bold transition-all shadow-md disabled:opacity-50">
+                          {isSubmittingEntrega ? "Guardando..." : "Registrar"}
+                        </button>
+                      </div>
+                      <div className="md:col-span-4 mt-2">
+                        <label className="block text-xs font-medium text-slate-500 mb-1">Notas de la Entrega</label>
+                        <input type="text" value={entregaForm.notas} onChange={e => setEntregaForm({...entregaForm, notas: e.target.value})} className="w-full px-3 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-white rounded-lg text-sm outline-none" placeholder="Opcional" />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Historial Timeline */}
+                  <div>
+                    <h3 className="text-sm font-bold text-slate-800 dark:text-slate-200 mb-4 flex items-center gap-2">
+                      <Clock size={16} className="text-slate-500" />
+                      Historial de Entregas
+                    </h3>
+                    
+                    {historialEntregas.length === 0 ? (
+                      <div className="text-center p-6 text-slate-500 text-sm bg-slate-50 dark:bg-slate-800/30 rounded-xl border border-dashed border-slate-300 dark:border-slate-700">
+                        No hay entregas registradas para este PDV.
+                      </div>
+                    ) : (
+                      <div className="space-y-4">
+                        {historialEntregas.map((entrega, idx) => (
+                          <div key={entrega.id_entrega || idx} className="relative pl-6 border-l-2 border-brand-blue/30 pb-4 last:pb-0">
+                            <div className="absolute w-3 h-3 bg-brand-blue rounded-full -left-[7.5px] top-1 ring-4 ring-white dark:ring-dark-card"></div>
+                            <div className="bg-slate-50 dark:bg-slate-800/40 p-3 rounded-lg border border-slate-200 dark:border-slate-700">
+                              <div className="flex justify-between items-start mb-2">
+                                <span className="text-xs font-bold text-slate-500">{new Date(entrega.fecha_hora_entrega).toLocaleString()}</span>
+                                <span className="text-xs bg-brand-blue/10 text-brand-blue px-2 py-0.5 rounded font-medium">Ref: V-{entrega.id_visita}</span>
+                              </div>
+                              {entrega.notas && <p className="text-sm text-slate-700 dark:text-slate-300 mb-3 italic">"{entrega.notas}"</p>}
+                              
+                              <div className="space-y-1">
+                                {entrega.detalles?.map(det => {
+                                  const pName = productosCat.find(p => p.id_producto === det.id_producto)?.nombre_producto || `Prod #${det.id_producto}`;
+                                  return (
+                                    <div key={det.id_entrega_producto} className="flex justify-between text-sm bg-white dark:bg-slate-800 px-3 py-1.5 rounded shadow-sm border border-slate-100 dark:border-slate-700">
+                                      <span className="font-medium text-slate-800 dark:text-slate-200">{pName}</span>
+                                      <span className="font-bold text-brand-blue">+{det.cantidad_entregada}</span>
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+               </div>
+             )}
 
           </div>
 

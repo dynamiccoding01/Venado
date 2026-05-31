@@ -157,5 +157,45 @@ export const API = {
       method: 'POST',
       body: JSON.stringify(data)
     });
+  },
+  // Catálogo y Entregas
+  getCategoriasProductos: async () => {
+    return apiFetch('/categorias-productos/');
+  },
+  createCategoriaProducto: async (data) => {
+    return apiFetch('/categorias-productos/', {
+      method: 'POST',
+      body: JSON.stringify(data)
+    });
+  },
+  getProductos: async (id_categoria = null) => {
+    const url = id_categoria ? `/productos/?id_categoria=${id_categoria}` : '/productos/';
+    return apiFetch(url);
+  },
+  createProducto: async (data) => {
+    return apiFetch('/productos/', {
+      method: 'POST',
+      body: JSON.stringify(data)
+    });
+  },
+  updateProducto: async (id, data) => {
+    return apiFetch(`/productos/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data)
+    });
+  },
+  deleteProducto: async (id) => {
+    return apiFetch(`/productos/${id}`, {
+      method: 'DELETE'
+    });
+  },
+  registrarEntrega: async (data) => {
+    return apiFetch('/entregas/', {
+      method: 'POST',
+      body: JSON.stringify(data)
+    });
+  },
+  getHistorialEntregasPdv: async (id_pdv) => {
+    return apiFetch(`/entregas/pdv/${id_pdv}`);
   }
 };

@@ -11,6 +11,7 @@ const navItems = [
   { id: 'staff', icon: Users, label: 'Personal', path: '/staff' },
   { id: 'mercados', icon: Store, label: 'Mercados y Zonas', path: '/mercados' },
   { id: 'categorias', icon: Tags, label: 'Categorías', path: '/categorias' },
+  { id: 'catalogo', icon: Package, label: 'Catálogo y Bodega', path: '/catalogo' },
   { id: 'reporting', icon: BarChart3, label: 'Reportes KPIs', path: '/reports' },
 ];
 
