@@ -416,6 +416,7 @@ export function MonitoreoRastreoView() {
   const getRouteStatusColor = (status) => {
     if (status === 'completada') return '#10b981';
     if (status === 'en_progreso') return '#2563eb';
+    if (status === 'no_realizada') return '#ef4444';
     return '#64748b';
   };
 
@@ -598,7 +599,11 @@ export function MonitoreoRastreoView() {
                     <button key={route.id_ruta} onClick={() => handleSelectRoute(route)} className={clsx("w-full text-left p-3 rounded-xl transition-all border", isSelected ? "bg-blue-50 dark:bg-brand-blue/10 border-brand-blue shadow-sm" : "bg-white dark:bg-transparent border-slate-100 dark:border-slate-800 hover:border-slate-300")}>
                       <div className="flex justify-between items-center mb-1">
                         <span className="text-xs font-black font-mono text-slate-500 dark:text-slate-400">RUTA-{route.id_ruta}</span>
-                        <span className={clsx("text-[9px] font-bold px-2 py-0.5 rounded uppercase tracking-widest", route.estado === 'en_progreso' ? "bg-brand-blue/10 text-brand-blue" : route.estado === 'completada' ? "bg-emerald-500/10 text-emerald-500" : "bg-slate-100 text-slate-500 dark:bg-white/5")}>
+                        <span className={clsx("text-[9px] font-bold px-2 py-0.5 rounded uppercase tracking-widest", 
+                          route.estado === 'en_progreso' ? "bg-brand-blue/10 text-brand-blue" : 
+                          route.estado === 'completada' ? "bg-emerald-500/10 text-emerald-500" : 
+                          route.estado === 'no_realizada' ? "bg-red-500/10 text-red-500" : 
+                          "bg-slate-100 text-slate-500 dark:bg-white/5")}>
                           {route.estado.replace('_', ' ')}
                         </span>
                       </div>
@@ -708,7 +713,11 @@ export function MonitoreoRastreoView() {
                       <Popup>
                         <div className="font-sans text-xs">
                           <p className="font-bold text-sm text-slate-800">{punto.pdv.nombre_pdv}</p>
-                          <p className={clsx("mt-1 uppercase text-[10px] font-bold", isCompleted ? "text-emerald-500" : "text-amber-500")}>
+                          <p className={clsx("mt-1 uppercase text-[10px] font-bold", 
+                            isCompleted ? "text-emerald-500" : 
+                            punto.estado === 'no_realizada' ? "text-red-500" : 
+                            "text-amber-500"
+                          )}>
                             Estado: {punto.estado.replace('_', ' ')}
                           </p>
                         </div>
