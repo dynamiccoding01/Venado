@@ -242,9 +242,19 @@ export function MonitoreoRastreoView() {
   const displayReponedores = reponedores.map((r) => ({
     ...r,
     estado: calcularEstado(r.ultimo_update)
-  }));
+  })).sort((a, b) => {
+    // 1. Activos primero
+    if (a.estado === 'activo' && b.estado !== 'activo') return -1;
+    if (a.estado !== 'activo' && b.estado === 'activo') return 1;
+    
+    // 2. Orden alfabético por nombre
+    const nameA = a.nombre || a.id?.toString() || '';
+    const nameB = b.nombre || b.id?.toString() || '';
+    return nameA.localeCompare(nameB);
+  });
 
   const filteredReponedores = displayReponedores.filter(r => 
+    r.nombre?.toLowerCase().includes(searchQueryRep.toLowerCase()) ||
     r.id?.toString().includes(searchQueryRep.toLowerCase()) ||
     r.estado?.toLowerCase().includes(searchQueryRep.toLowerCase())
   );
@@ -375,9 +385,15 @@ export function MonitoreoRastreoView() {
                       <div className="text-[10px] text-slate-500 dark:text-slate-400 mt-2">
                         {rep.lat ? `Pos: ${rep.lat.toFixed(4)}, ${rep.lon.toFixed(4)}` : 'Sin GPS'}
                       </div>
-                      <button onClick={(e) => { e.stopPropagation(); handleVerRutasReponedor(rep.id); }} className="mt-2 w-full bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 py-1.5 rounded-lg text-[10px] font-bold transition-colors flex items-center justify-center gap-1">
-                        <Route size={12} className="text-brand-blue" /> Ver Rutas Asignadas
-                      </button>
+                      <div className="flex flex-col gap-1 mt-2">
+                        <button onClick={(e) => { e.stopPropagation(); handleVerRutasReponedor(rep.id); }} className="w-full bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 py-1.5 rounded-lg text-[10px] font-bold transition-colors flex items-center justify-center gap-1">
+                          <Route size={12} className="text-brand-blue" /> Ver Rutas Asignadas
+                        </button>
+                        <button onClick={(e) => { e.stopPropagation(); /* TODO */ }} className="w-full bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 py-1.5 rounded-lg text-[10px] font-bold transition-colors flex items-center justify-center gap-1">
+                           {/* Placeholder para la nueva acción que pidió el usuario */}
+                          <Zap size={12} className="text-brand-blue" /> Acción (Falta Definir)
+                        </button>
+                      </div>
                     </div>
                   );
                 })}
